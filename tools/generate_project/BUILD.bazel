@@ -1,0 +1,74 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+load(":generate.bzl", "generate_sphinx_project")
+
+# Define config settings for different document groups
+config_setting(
+    name = "api_only",
+    define_values = {
+        "docs_group": "api",
+    },
+)
+
+config_setting(
+    name = "auth_only",
+    define_values = {
+        "docs_group": "auth",
+    },
+)
+
+config_setting(
+    name = "minimal_docs",
+    define_values = {
+        "docs_group": "minimal",
+    },
+)
+
+config_setting(
+    name = "schema_fail_docs",
+    define_values = {
+        "docs_group": "schema_fail",
+    },
+)
+
+filegroup(
+    name = "schema",
+    srcs = ["schemas.json"],
+)
+
+filegroup(
+    name = "conf_py",
+    srcs = ["conf.py"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ubproject",
+    srcs = ["ubproject.toml"],
+)
+
+filegroup(
+    name = "index_template",
+    srcs = ["index.rst.template"],
+)
+
+py_binary(
+    name = "generate_project",
+    srcs = ["generate_project.py"],
+)
+
+generate_sphinx_project(
+    name = "generate",
+    all_docs = select({
+        ":api_only": "//docs/components:api",
+        ":auth_only": "//docs/components:auth",
+        ":minimal_docs": "//docs/components:minimal",
+        ":schema_fail_docs": "//docs/components:schema_fail",
+        "//conditions:default": "//docs/components:all",
+    }),
+    conf_py = ":conf_py",
+    generate_script = ":generate_project",
+    index_template = ":index_template",
+    schema = ":schema",
+    ubproject = ":ubproject",
+    visibility = ["//visibility:public"],
+)

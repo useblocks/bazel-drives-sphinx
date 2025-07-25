@@ -1,0 +1,7 @@
+--extra-index-url https://pypi.org/simple/
+
+# sphinx-needs 5.1 with schema validation merged;
+# do not pin Sphinx itself, let sphinx-needs drives the resolution of the dependency tree
+sphinx-needs[plotting] @ git+https://github.com/useblocks/sphinx-needs.git@9d86602d510f8526dd5f0e6b8581ee9db1fa9bb3
+Sphinx
+furo

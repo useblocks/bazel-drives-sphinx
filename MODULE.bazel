@@ -1,0 +1,39 @@
+"""Bazel Module to show how Bazel can drive Sphinx documentation generation."""
+
+module(
+    name = "bazel_drives_sphinx",
+    version = "0.1.0",
+)
+
+# Python rules
+bazel_dep(name = "rules_python", version = "1.4.1")
+
+PYTHON_VERSION = "3.12"
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    configure_coverage_tool = True,
+    is_default = True,
+    python_version = PYTHON_VERSION,
+)
+use_repo(python)
+
+# docs / Sphinx dependencies
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pip_process",
+    python_version = PYTHON_VERSION,
+    requirements_lock = "//tools/sphinx:requirements.txt",
+)
+use_repo(pip, "pip_process")
+
+# PlantUML for docs
+bazel_dep(name = "rules_java", version = "8.13.0")
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+http_jar(
+    name = "plantuml",
+    sha256 = "6f38f70455d08438979451c2257cd5d58647c6460094bb829bc2a12878d47331",
+    url = "https://github.com/plantuml/plantuml/releases/download/v1.2025.0/plantuml-1.2025.0.jar",
+)

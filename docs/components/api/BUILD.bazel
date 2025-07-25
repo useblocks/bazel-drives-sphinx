@@ -1,0 +1,16 @@
+filegroup(
+    name = "docs",
+    srcs = [
+        "endpoints/endpoints.rst",
+        "responses.rst",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "responses",
+    srcs = [
+        "responses.rst",
+    ],
+    visibility = ["//visibility:public"],
+)
