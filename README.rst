@@ -50,7 +50,7 @@ Getting Started
 ---------------
 
 To get started with this project, ensure you have `Bazelisk <https://github.com/bazelbuild/bazelisk>`__ installed.
-It will get the collect version of Bazel.
+It will get the correct version of Bazel.
 
 You can then build the documentation by running the appropriate Bazel commands.
 
