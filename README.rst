@@ -42,7 +42,9 @@ That way documentation and requirements can be selected the same way features ar
 components.
 In this approach Bazel can also pass on tags to the Sphinx ``sphinx-build`` CLI which can be used for
 variant management or other dynamic behavior in Sphinx-Needs.
-can affect the documentation generation process, e.g. because the docname is examined by Sphinx extensions.
+
+The original file/folder structure of the docs sources is kept,
+as it can affect the documentation generation process, e.g. because the docname is examined by Sphinx extensions.
 
 Getting Started
 ---------------
