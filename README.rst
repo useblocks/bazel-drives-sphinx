@@ -14,25 +14,25 @@ Goals
 - Bazel ``build`` targets are used for isolation (instead of ``run`` targets)
 - Sphinx is used to generate the documentation from the collected RST files
 - The collected RST files do not contain ``.. toctree::`` directives as those are provided by a rule programmatically.
-  While users could do that, the is a danger that Bazel decides to exclude toctree RST files so Sphinx will complain.
+  While users could do that, there is a danger that Bazel decides to exclude toctree RST files so Sphinx will complain.
 - Sphinx will run the build and safely complain if there are missing files or references.
 - Sphinx-Needs is used and works in the setup.
 - The new schema validation feature of Sphinx-Needs is used to ensure that the documentation schema is valid.
 - Dedicated Bazel goal for a fast schema validation with Sphinx-Needs based on the new ``schema`` builder.
-- The original file structure of RSTs is kept, so that the docname variable is not afffected.
-  This is helpful when need schema validation is done based on the contained folder structure.
+- The original file structure of RSTs is kept, so that the docname variable is not affected.
+  This is helpful when needs schema validation is done based on the contained folder structure.
 - The needs.json file is generated along the Sphinx output for each builder.
 
 The solution assumes a safe subset of Sphinx/Sphinx-Needs features are used (to be documented).
 E.g. linking to a headline in a Bazel excluded file will naturally fail or linking to a need that is not included.
-But these are all expected failurs and Sphinx should be called with ``-W`` to fail on any warnings.
+But these are all expected failures and Sphinx should be called with ``-W`` to fail on any warnings.
 Sphinx can also be configured to suppress certain warning types that commonly appear in such a setup.
 
 Behind the scenes
 -----------------
 
 Sphinx itself is a build system. It has some mechanism for the inclusion and exclusion of files, but the logic
-is maintained in the Python file ``conf.py`` which does not integrate well to build systems.
+is maintained in the Python file ``conf.py`` which does not integrate well with build systems.
 Sphinx also requires all files to be part of the build root, which is not always the case in large projects.
 
 The idea of this demo is to delegate the dependency management inside a Sphinx project to Bazel.
@@ -94,13 +94,13 @@ The project is organized to demonstrate modular documentation management with Ba
 
 **Key Components:**
 
-- **Component Selection**: ``docs/components/BUILD.bazel`` defines filegroups for different documentation sets 
+- **Component Selection**: ``docs/components/BUILD.bazel`` defines filegroups for different documentation sets
   (``all``, ``api``, ``auth``, ``minimal``, ``schema_fail``)
 - **Dynamic Generation**: ``tools/generate_project/generate_project.py`` script collects selected RST files and
   generates a complete Sphinx project structure with proper toctree directives
 - **Build Variants**: ``tools/generate_project/BUILD.bazel`` uses ``config_setting`` and ``select()``
   to switch between documentation sets based on command-line flags
-- **Sphinx Integration**: ``tools/sphinx/BUILD.bazel`` contains ``sphinx_docs`` rules that process the generated 
+- **Sphinx Integration**: ``tools/sphinx/BUILD.bazel`` contains ``sphinx_docs`` rules that process the generated
   project structure with both HTML and schema validation builders
 - **Modular Dependencies**: Each component in ``docs/components/`` has its own BUILD file, allowing Bazel to
   track dependencies and only rebuild what's necessary
@@ -126,7 +126,7 @@ Only build the docs for the ``auth`` component::
 
   bazelisk build //tools/sphinx:docs_html --define=docs_group=auth
 
-Only build the docs for the one file of the ``api`` component::
+Only build the docs for one file of the ``api`` component::
 
   bazelisk build //tools/sphinx:docs_html --define=docs_group=minimal
 
