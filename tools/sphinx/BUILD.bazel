@@ -1,9 +1,6 @@
 load("@pip_process//:requirements.bzl", "all_requirements")
-# load("@aspect_rules_py//py:defs.bzl", "py_library")
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
-
-# load(":run_sphinx.bzl", "sphinx_build")
 load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
 
 # In order to update the requirements, change the `requirements.txt` file and run:
@@ -65,12 +62,11 @@ sphinx_build_binary(
 sphinx_docs(
     name = "docs_html",
     srcs = [
-        "index.rst",
         ":schema",
         ":ubproject",
+        "index.rst",
         "//tools/sphinx/dynamic_project:generate"
     ],
-    # deps = ["//tools/dynamic_project:generate"],
     config = "conf.py",
     extra_opts = [
         "-W",
@@ -89,8 +85,6 @@ sphinx_docs(
     ],
     visibility = ["//visibility:public"],
 )
-
-
 
 # sphinx_docs(
 #     name = "docs_schema",
