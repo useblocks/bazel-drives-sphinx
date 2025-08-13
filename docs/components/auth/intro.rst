@@ -1,5 +1,5 @@
-Auth module
-===========
+Intro
+=====
 
 Overview
 --------
