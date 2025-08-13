@@ -1,56 +1,79 @@
+"""Generate component-specific config_settings and file selections."""
+
 def generate_component_config(name, components):
-    """Generate component-specific config_settings and file selections.
-    
+    """Generates:
+
+      - use_incl_bits_true: enable bit-mode selection
+      - incl_<component>_true: a bit per component
+      - files: final selection (trace_only variant supported)
+
     Args:
         name: unused
         components: List of component names (e.g., ['api', 'auth', 'schema_fail'])
     """
 
+    # Switch to include trace-only files
     native.config_setting(
         name = "trace_only_true",
         define_values = {"trace_only": "true"},
     )
 
-    # Generate config_setting for each component
+    # Enable bit-mode: only include components explicitly set via incl_* flags
+    native.config_setting(
+        name = "use_incl_bits_true",
+        define_values = {"use_incl_bits": "true"},
+    )
+
+    # One config_setting per component bit: --define=incl_<component>=true
     for component in components:
         native.config_setting(
-            name = "component_" + component,
-            define_values = {"component": component},
+            name = "incl_%s_true" % component,
+            define_values = {"incl_%s" % component: "true"},
         )
 
-    # Generate the all_files filegroup with select
-    all_files_select = {}
-    trace_files_select = {}
-    
-    # Default case - all components
-    default_all_files = []
-    default_trace_files = []
-    
-    for component in components:
-        # Add individual component selections
-        all_files_select[":component_" + component] = ["//docs/components/" + component + ":docs_all"]
-        trace_files_select[":component_" + component] = ["//docs/components/" + component + ":docs_trace"]
-        
-        # Add to default (all components)
-        default_all_files.append("//docs/components/" + component + ":docs_all")
-        default_trace_files.append("//docs/components/" + component + ":docs_trace")
-    
-    # Use //conditions:default instead of creating an invalid config_setting
-    all_files_select["//conditions:default"] = default_all_files
-    trace_files_select["//conditions:default"] = default_trace_files
-    
-    # Create filegroups for the selections
+    # Default (no bit-mode): include all components
+    default_all = ["//docs/components/%s:docs_all" % c for c in components]
+    default_trace = ["//docs/components/%s:docs_trace" % c for c in components]
+
+    # Bit-mode: include only components explicitly enabled
+    bitmode_all = []
+    bitmode_trace = []
+    for c in components:
+        bitmode_all += select({
+            ":incl_%s_true" % c: ["//docs/components/%s:docs_all" % c],
+            "//conditions:default": [],
+        })
+        bitmode_trace += select({
+            ":incl_%s_true" % c: ["//docs/components/%s:docs_trace" % c],
+            "//conditions:default": [],
+        })
+
+    native.filegroup(
+        name = "bitmode_all_files",
+        srcs = bitmode_all,
+    )
+
+    native.filegroup(
+        name = "bitmode_trace_files",
+        srcs = bitmode_trace,
+    )
+
     native.filegroup(
         name = "component_all_files",
-        srcs = select(all_files_select),
+        srcs = select({
+            ":use_incl_bits_true": [":bitmode_all_files"],
+            "//conditions:default": default_all,
+        }),
     )
-    
+
     native.filegroup(
-        name = "component_trace_files", 
-        srcs = select(trace_files_select),
+        name = "component_trace_files",
+        srcs = select({
+            ":use_incl_bits_true": [":bitmode_trace_files"],
+            "//conditions:default": default_trace,
+        }),
     )
-    
-    # Create the final files selection
+
     native.filegroup(
         name = "files",
         srcs = select({
