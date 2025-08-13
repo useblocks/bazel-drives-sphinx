@@ -18,7 +18,7 @@ def _generate_sphinx_project_impl(ctx):
         outputs = [output_dir],
         executable = ctx.executable.generate_script,
         arguments = [args],
-        mnemonic = "GenerateSphinxProject",
+        mnemonic = "GenerateDynamicSphinxProject",
     )
 
     return [DefaultInfo(files = depset([output_dir]))]
