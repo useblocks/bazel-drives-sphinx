@@ -1,15 +1,15 @@
 filegroup(
-    name = "docs",
+    name = "docs_all",
     srcs = [
+        ":docs_trace",
         "index.rst",
         "intro.rst",
-        ":trace"
     ],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "trace",
+    name = "docs_trace",
     srcs = [
         "trace/authentication.rst",
         "trace/authorization.rst",

@@ -10,5 +10,6 @@ This document provides information about the authentication process in the appli
 
 .. spec:: A spec related to Authentication
    :id: S_AUTH_001
+   :links: S_AUTH_FAIL_001
 
    The app does authentication.
