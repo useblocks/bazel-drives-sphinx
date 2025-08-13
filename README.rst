@@ -79,10 +79,10 @@ The project is organized to demonstrate modular documentation management with Ba
   │           ├── BUILD.bazel
   │           └── index.rst
   └── tools/                          # Build tooling
-      ├── generate_project/           # Sphinx project generation
+      ├── dynamic_project/           # Sphinx project generation
       │   ├── BUILD.bazel             # Generator targets with config_setting
       │   ├── generate.bzl            # Custom Bazel rule
-      │   ├── generate_project.py     # Python script for project assembly
+      │   ├── dynamic_project.py     # Python script for project assembly
       │   ├── conf.py                 # Sphinx configuration template
       │   ├── index.rst.template      # Index template with toctree placeholder
       │   ├── schemas.json            # Sphinx-Needs schema definitions
@@ -96,9 +96,9 @@ The project is organized to demonstrate modular documentation management with Ba
 
 - **Component Selection**: ``docs/components/BUILD.bazel`` defines filegroups for different documentation sets
   (``all``, ``api``, ``auth``, ``minimal``, ``schema_fail``)
-- **Dynamic Generation**: ``tools/generate_project/generate_project.py`` script collects selected RST files and
+- **Dynamic Generation**: ``tools/dynamic_project/dynamic_project.py`` script collects selected RST files and
   generates a complete Sphinx project structure with proper toctree directives
-- **Build Variants**: ``tools/generate_project/BUILD.bazel`` uses ``config_setting`` and ``select()``
+- **Build Variants**: ``tools/dynamic_project/BUILD.bazel`` uses ``config_setting`` and ``select()``
   to switch between documentation sets based on command-line flags
 - **Sphinx Integration**: ``tools/sphinx/BUILD.bazel`` contains ``sphinx_docs`` rules that process the generated
   project structure with both HTML and schema validation builders

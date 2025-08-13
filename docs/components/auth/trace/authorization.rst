@@ -1,5 +1,5 @@
-Authorization Documentation
-===========================
+Authorization
+=============
 
 This document provides information about the authorization process in the application. It outlines the necessary steps and considerations for implementing authorization effectively.
 

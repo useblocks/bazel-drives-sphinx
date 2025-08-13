@@ -31,29 +31,13 @@ config_setting(
 )
 
 filegroup(
-    name = "schema",
-    srcs = ["schemas.json"],
-)
-
-filegroup(
-    name = "conf_py",
-    srcs = ["conf.py"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "ubproject",
-    srcs = ["ubproject.toml"],
-)
-
-filegroup(
     name = "index_template",
     srcs = ["index.rst.template"],
 )
 
 py_binary(
-    name = "generate_project",
-    srcs = ["generate_project.py"],
+    name = "generator",
+    srcs = ["generator.py"],
 )
 
 generate_sphinx_project(
@@ -65,10 +49,10 @@ generate_sphinx_project(
         ":schema_fail_docs": "//docs/components:schema_fail",
         "//conditions:default": "//docs/components:all",
     }),
-    conf_py = ":conf_py",
-    generate_script = ":generate_project",
+    # conf_py = ":conf_py",
+    generate_script = ":generator",
     index_template = ":index_template",
-    schema = ":schema",
-    ubproject = ":ubproject",
+    # schema = ":schema",
+    # ubproject = ":ubproject",
     visibility = ["//visibility:public"],
 )

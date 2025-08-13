@@ -1,5 +1,4 @@
 load("@pip_process//:requirements.bzl", "all_requirements")
-
 # load("@aspect_rules_py//py:defs.bzl", "py_library")
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
@@ -18,6 +17,16 @@ compile_pip_requirements(
     # requirements_lock = "requirements_lock.txt",
     requirements_txt = "requirements.txt",
     tags = ["manual"],
+)
+
+filegroup(
+    name = "schema",
+    srcs = ["schemas.json"],
+)
+
+filegroup(
+    name = "ubproject",
+    srcs = ["ubproject.toml"],
 )
 
 # alias(
@@ -55,18 +64,25 @@ sphinx_build_binary(
 
 sphinx_docs(
     name = "docs_html",
-    srcs = ["//tools/generate_project:generate"],
-    config = "//tools/generate_project:conf_py",
+    srcs = [
+        "index.rst",
+        ":schema",
+        ":ubproject",
+        "//tools/sphinx/dynamic_project:generate"
+    ],
+    # deps = ["//tools/dynamic_project:generate"],
+    config = "conf.py",
     extra_opts = [
         "-W",
         "--keep-going",
         "-d",
-        "$(GENDIR)/doctrees",  # don't store those, no incremental build
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
     ],
     formats = [
         "html",
     ],
     sphinx = ":sphinx_build",
+    strip_prefix = package_name() + "/",
     tags = [],
     tools = [
         ":plantuml",
@@ -74,23 +90,31 @@ sphinx_docs(
     visibility = ["//visibility:public"],
 )
 
-sphinx_docs(
-    name = "docs_schema",
-    srcs = ["//tools/generate_project:generate"],
-    config = "//tools/generate_project:conf_py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "$(GENDIR)/doctrees",  # don't store those, no incremental build
-    ],
-    formats = [
-        "schema",
-    ],
-    sphinx = ":sphinx_build",
-    tags = [],
-    tools = [
-        ":plantuml",
-    ],
-    visibility = ["//visibility:public"],
-)
+
+
+# sphinx_docs(
+#     name = "docs_schema",
+#     srcs = ["//tools/dynamic_project:generate"],
+#     # source_tree = "//tools/dynamic_project:generate",
+#     config = ":conf_py",
+#     extra_opts = [
+#         "-W",
+#         "--keep-going",
+#         "-d",
+#         "doctrees-throw-away",  # don't store those in the output, no incremental build
+#     ],
+#     strip_prefix = "//tools/dynamic_project:generate/src/",
+#     # renamed_srcs = {
+#     #     "//tools/dynamic_project:conf_py": "conf.py"
+#     # },
+#     formats = [
+#         "schema",
+#     ],
+#     sphinx = ":sphinx_build",
+#     tags = [],
+#     tools = [
+#         ":plantuml",
+#     ],
+#     visibility = ["//visibility:public"],
+# )
+

@@ -1,7 +1,11 @@
-filegroup(
+load("@rules_python//sphinxdocs:sphinx_docs_library.bzl", "sphinx_docs_library")
+
+sphinx_docs_library(
     name = "docs",
     srcs = [
         "index.rst",
     ],
+    # prefix = "/",
+    # strip_prefix = "docs/components/schema_fail",
     visibility = ["//visibility:public"],
 )
