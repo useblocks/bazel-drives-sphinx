@@ -1,11 +1,23 @@
 """Generate component-specific config_settings and file selections."""
 
 def generate_component_config(name, components):
-    """Generates:
+    """
+    Generate component specific config_settings and selectors.
 
-      - use_incl_bits_true: enable bit-mode selection
-      - incl_<component>_true: a bit per component
-      - files: final selection (trace_only variant supported)
+    The function relies on the directory structure docs/components/<component>.
+    It also relies on the existence of 2 file groups in each component:
+    docs_trace and docs_all. docs_trace only contains need items and not much more.
+    docs_all must contain all documentation for the component, including docs_trace.
+    The goal is to split the traceability docs from all docs for a fast traceability
+    validation (aka. ontology check or schema validation).
+
+    Bazel --define options:
+
+    - use_incl_bits=true: enable incl_<component> selection
+      (if false or not given, all components are selected)
+    - incl_<component>=true: an enable flag per component
+    - trace_only=true: if true, only the file groups docs_trace are selected for fast
+      traceability validations
 
     Args:
         name: unused
