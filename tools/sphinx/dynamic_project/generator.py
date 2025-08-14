@@ -16,18 +16,12 @@ def collect_rst_files(components_dir: Path):
 
 def generate_sphinx_structure(
     output_dir: Path,
-    # schema: Path,
-    # ubproject: Path,
     template_file: Path,
     doc_files: list[Path],
 ):
     """Generate a proper Sphinx project structure."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-
-    # Copy schema and ubproject files
-    # shutil.copy2(schema, output_path / "schemas.json")
-    # shutil.copy2(ubproject, output_path / "ubproject.toml")
 
     # Generate index.rst from template
     with open(template_file, "r") as f:
@@ -73,9 +67,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output-dir", required=True, help="Output directory for the generated project"
     )
-    # parser.add_argument("--schema", required=True, help="schemas.json file path")
-    # parser.add_argument("--ubproject", required=True, help="ubproject.toml file path")
-    # parser.add_argument("--conf", required=True, help="Configuration file path")
     parser.add_argument(
         "--index-template", required=True, help="index.rst template file path"
     )
@@ -89,16 +80,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(f"Output directory: {args.output_dir}")
-    # print(f"Schema: {args.schema}")
-    # print(f"ubproject.toml: {args.ubproject}")
-    # print(f"Config: {args.conf}")
     print(f"Template: {args.index_template}")
     print(f"Docs: {args.doc}")
 
     generate_sphinx_structure(
         Path(args.output_dir),
-        # Path(args.schema),
-        # Path(args.ubproject),
         Path(args.index_template),
         [Path(x) for x in args.doc],
     )

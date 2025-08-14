@@ -43,17 +43,7 @@ py_binary(
 generate_sphinx_project(
     name = "generate",
     all_docs = "//cfg:files",
-    # all_docs = select({
-    #     ":api_only": "//docs/components:api",
-    #     ":auth_only": "//docs/components:auth",
-    #     ":minimal_docs": "//docs/components:minimal",
-    #     ":schema_fail_docs": "//docs/components:schema_fail",
-    #     "//conditions:default": "//docs/components:all",
-    # }),
-    # conf_py = ":conf_py",
     generate_script = ":generator",
     index_template = ":index_template",
-    # schema = ":schema",
-    # ubproject = ":ubproject",
     visibility = ["//visibility:public"],
 )
