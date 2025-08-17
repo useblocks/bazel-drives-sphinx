@@ -2,48 +2,50 @@ load("@rules_python//python:defs.bzl", "py_binary")
 load(":generate.bzl", "generate_sphinx_project")
 
 # Define config settings for different document groups
-config_setting(
-    name = "api_only",
-    define_values = {
-        "docs_group": "api",
-    },
-)
+# config_setting(
+#     name = "api_only",
+#     define_values = {
+#         "docs_group": "api",
+#     },
+# )
 
-config_setting(
-    name = "auth_only",
-    define_values = {
-        "docs_group": "auth",
-    },
-)
+# config_setting(
+#     name = "auth_only",
+#     define_values = {
+#         "docs_group": "auth",
+#     },
+# )
 
-config_setting(
-    name = "minimal_docs",
-    define_values = {
-        "docs_group": "minimal",
-    },
-)
+# config_setting(
+#     name = "minimal_docs",
+#     define_values = {
+#         "docs_group": "minimal",
+#     },
+# )
 
-config_setting(
-    name = "schema_fail_docs",
-    define_values = {
-        "docs_group": "schema_fail",
-    },
-)
+# config_setting(
+#     name = "schema_fail_docs",
+#     define_values = {
+#         "docs_group": "schema_fail",
+#     },
+# )
 
 filegroup(
     name = "index_template",
     srcs = ["index.rst.template"],
+    visibility = ["//visibility:public"]
 )
 
 py_binary(
     name = "generator",
     srcs = ["generator.py"],
+    visibility = ["//visibility:public"]
 )
 
-generate_sphinx_project(
-    name = "generate",
-    all_docs = "//cfg:files",
-    generate_script = ":generator",
-    index_template = ":index_template",
-    visibility = ["//visibility:public"],
-)
+# generate_sphinx_project(
+#     name = "generate",
+#     all_docs = "//projects/webapp/cfg:files",
+#     generate_script = ":generator",
+#     index_template = ":index_template",
+#     visibility = ["//visibility:public"],
+# )

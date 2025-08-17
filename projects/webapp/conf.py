@@ -2,7 +2,7 @@
 
 import time
 
-project = "Bazel Drives Sphinx Demo"
+project = "Bazel Drives Sphinx: Web-App Project"
 author = "ubmarco"
 release = "0.1"
 
@@ -12,7 +12,7 @@ extensions = [
     "sphinx_needs",
 ]
 
-# master_doc = "src/index"
+master_doc = "docs_generated/index"
 
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -36,7 +36,6 @@ def setup(app):
         """
         Wait after the build is finished to debug the Bazel sandbox.
         """
-        # raise ValueError(f"{app.srcdir=} - {app.outdir=}")
         print(f"{app.srcdir=} - {app.outdir=}")
         time.sleep(120)
 

@@ -1,10 +1,9 @@
 """Generate component-specific config_settings and file selections."""
-
 def generate_component_config(name, components):
     """
     Generate component specific config_settings and selectors.
 
-    The function relies on the directory structure docs/components/<component>.
+    The function relies on the directory structure projects/<project>/<component>.
     It also relies on the existence of 2 file groups in each component:
     docs_trace and docs_all. docs_trace only contains need items and not much more.
     docs_all must contain all documentation for the component, including docs_trace.
@@ -13,14 +12,14 @@ def generate_component_config(name, components):
 
     Bazel --define options:
 
-    - use_incl_bits=true: enable incl_<component> selection
+    - use_incl_bits=true: enable incl_<project>_<component> selection
       (if false or not given, all components are selected)
-    - incl_<component>=true: an enable flag per component
+    - incl_<project>_<component>=true: an enable flag per component
     - trace_only=true: if true, only the file groups docs_trace are selected for fast
       traceability validations
 
     Args:
-        name: unused
+        name: project name (e.g., 'myproject')
         components: List of component names (e.g., ['api', 'auth', 'schema_fail'])
     """
 
@@ -36,27 +35,27 @@ def generate_component_config(name, components):
         define_values = {"use_incl_bits": "true"},
     )
 
-    # One config_setting per component bit: --define=incl_<component>=true
+    # One config_setting per component bit: --define=incl_<project>_<component>=true
     for component in components:
         native.config_setting(
-            name = "incl_%s_true" % component,
-            define_values = {"incl_%s" % component: "true"},
+            name = "incl_%s_%s_true" % (name, component),
+            define_values = {"incl_%s_%s" % (name, component): "true"},
         )
 
     # Default (no bit-mode): include all components
-    default_all = ["//docs/components/%s:docs_all" % c for c in components]
-    default_trace = ["//docs/components/%s:docs_trace" % c for c in components]
+    default_all = ["//projects/%s/%s/docs:docs_all" % (name, c) for c in components]
+    default_trace = ["//projects/%s/%s/docs:docs_trace" % (name, c) for c in components]
 
     # Bit-mode: include only components explicitly enabled
     bitmode_all = []
     bitmode_trace = []
     for c in components:
         bitmode_all += select({
-            ":incl_%s_true" % c: ["//docs/components/%s:docs_all" % c],
+            ":incl_%s_%s_true" % (name, c): ["//projects/%s/%s/docs:docs_all" % (name, c)],
             "//conditions:default": [],
         })
         bitmode_trace += select({
-            ":incl_%s_true" % c: ["//docs/components/%s:docs_trace" % c],
+            ":incl_%s_%s_true" % (name, c): ["//projects/%s/%s/docs:docs_trace" % (name, c)],
             "//conditions:default": [],
         })
 

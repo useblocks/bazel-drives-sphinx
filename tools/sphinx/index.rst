@@ -5,4 +5,4 @@ Docs Root
     :maxdepth: 1
     :glob:
 
-    dynamic_project/*
+    generated_project/*
