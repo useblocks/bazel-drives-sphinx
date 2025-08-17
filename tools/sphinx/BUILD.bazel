@@ -18,24 +18,6 @@ compile_pip_requirements(
     tags = ["manual"],
 )
 
-filegroup(
-    name = "schema",
-    srcs = ["schemas.json"],
-    visibility = ["//projects:__subpackages__"],
-)
-
-filegroup(
-    name = "confpy",
-    srcs = ["conf.py"],
-    visibility = ["//projects:__subpackages__"],
-)
-
-filegroup(
-    name = "indexrst",
-    srcs = ["index.rst"],
-    visibility = ["//projects:__subpackages__"],
-)
-
 # alias(
 #     name = "requirements.update",
 #     actual = ":requirements",
@@ -65,7 +47,7 @@ java_binary(
 sphinx_build_binary(
     name = "sphinx_build",
     data = [],
-    deps = all_requirements,
+    deps = all_requirements + [":plantuml"],
     visibility = ["//projects:__subpackages__"],
 )
 
