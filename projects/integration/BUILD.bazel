@@ -20,7 +20,7 @@ generate_sphinx_project(
         "//projects/webapp:docs_needs",
         "//projects/acdc:docs_needs",
     ],
-    strip_prefix = "projects/integration/",  # Strip the package path from input files
+    strip_prefix = package_name() + "/",  # Strip the package path from input files
     generate_script = "//tools/sphinx/dynamic_project:generator",
     index_template = "//tools/sphinx/dynamic_project:index_template",
     visibility = ["//visibility:public"],
