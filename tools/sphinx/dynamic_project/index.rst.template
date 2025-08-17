@@ -1,6 +1,7 @@
 {{ title }}
 
 .. toctree::
-   :maxdepth: 8
 
    {{ toctree }}
+
+{{ needimports }}

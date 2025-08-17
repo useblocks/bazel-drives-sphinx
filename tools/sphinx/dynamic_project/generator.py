@@ -34,7 +34,13 @@ def add_path_prefix(file_path, prefix):
 
 
 def generate_sphinx_structure(
-    output_dir, template_file, doc_files, strip_prefix="", prefix="", title=""
+    output_dir,
+    template_file,
+    doc_files,
+    needs_json_files=None,
+    strip_prefix="",
+    prefix="",
+    title="",
 ):
     """Generate a proper Sphinx project structure."""
     output_path = Path(output_dir)
@@ -66,7 +72,7 @@ def generate_sphinx_structure(
         shutil.copy2(doc_file, full_dest_path)
 
         # Add to toctree (without .rst extension)
-        toctree_entry = f'{dest_path.with_suffix("")} <{dest_path.with_suffix("")}>'
+        toctree_entry = f"{dest_path.with_suffix('')} <{dest_path.with_suffix('')}>"
         toctree_entries.append(toctree_entry)
 
         # Track mapping for debugging
@@ -75,11 +81,56 @@ def generate_sphinx_structure(
     # Sort toctree entries for consistent output
     toctree_entries.sort()
 
+    index_path = output_path / "index.rst"
+
+    # Generate needimport directives from needs.json files
+    needimport_entries = []
+    if needs_json_files:
+        for needs_json_file in needs_json_files:
+            # Extract the relative path for the needimport directive
+            needs_json_path = Path(needs_json_file)
+
+            # Find the needs.json file in the path and construct relative path
+            # Example: projects/webapp/docs_needs/_build/needs/needs.json -> ../webapp/docs_needs/_build/needs/needs.json
+            path_parts = needs_json_path.parts
+
+            # Look for the pattern that indicates this is a needs build output
+            if "_build" in path_parts and "needs" in path_parts:
+                # Find the project name (e.g., 'webapp', 'acdc')
+                # project_idx = None
+                # for i, part in enumerate(path_parts):
+                #     if part == "projects" and i + 1 < len(path_parts):
+                #         project_idx = i + 1
+                #         break
+
+                # if project_idx:
+                #     project_name = path_parts[project_idx]
+                #     # Create relative path to the needs.json file
+                relative_dir = f"../../../../../../../{needs_json_path}"
+                relative_path = f'{relative_dir}/needs.json'
+
+                to_print = Path(index_path).resolve().parent.parent.parent.parent.parent.parent.parent / needs_json_path
+                to_print = Path(index_path.parent).parent.resolve()
+                print(f"Files in directory {to_print}:")
+                if to_print.exists() and to_print.is_dir():
+                    for file in to_print.iterdir():
+                        print(f"  {file}")
+                else:
+                    print(f"  Directory does not exist or is not a directory")
+
+                # raise ValueError(relative_path)
+                needimport_entries.append(f".. needimport:: {relative_path}\n")
+
     # Replace placeholders in template
     toctree_content = "\n   ".join(toctree_entries)
+    needimport_content = "\n".join(needimport_entries) if needimport_entries else ""
+
     index_content = template_content.replace("{{ toctree }}", toctree_content)
+    index_content = index_content.replace("{{ needimports }}", needimport_content)
     final_title = title or "Documentation"
-    index_content = index_content.replace("{{ title }}", f"{final_title}\n{len(final_title) * '='}")
+    index_content = index_content.replace(
+        "{{ title }}", f"{final_title}\n{len(final_title) * '='}"
+    )
 
     # Write index.rst
     index_path = output_path / "index.rst"
@@ -95,6 +146,7 @@ def generate_sphinx_structure(
     for orig, dest in file_mapping.items():
         print(f"  {orig} -> {dest}")
     print(f"Toctree entries: {toctree_entries}")
+    print(f"Needimport entries: {needimport_entries}")
 
 
 if __name__ == "__main__":
@@ -126,6 +178,12 @@ if __name__ == "__main__":
         required=True,
         help="Documentation files (can be specified multiple times)",
     )
+    parser.add_argument(
+        "--needs-json",
+        action="append",
+        default=[],
+        help="needs.json files (can be specified multiple times)",
+    )
 
     args = parser.parse_args()
 
@@ -135,11 +193,13 @@ if __name__ == "__main__":
     print(f"Strip prefix: '{args.strip_prefix}'")
     print(f"Add prefix: '{args.prefix}'")
     print(f"Docs: {args.doc}")
+    print(f"Needs JSON: {args.needs_json}")
 
     generate_sphinx_structure(
         args.output_dir,
         args.index_template,
         args.doc,
+        args.needs_json,
         args.strip_prefix,
         args.prefix,
         args.title,
