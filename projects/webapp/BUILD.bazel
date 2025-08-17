@@ -19,7 +19,6 @@ generate_sphinx_project(
     title = "Bazel Drives Sphinx Web-App",
     all_docs = ":files",
     strip_prefix = "projects/webapp/",  # Strip the package path from input files
-    prefix = "foo",
     generate_script = "//tools/sphinx/dynamic_project:generator",
     index_template = "//tools/sphinx/dynamic_project:index_template",
     visibility = ["//visibility:public"],
@@ -70,6 +69,33 @@ sphinx_docs(
     ],
     formats = [
         "schema",
+    ],
+    sphinx = "//tools/sphinx:sphinx_build",
+    tags = [],
+    tools = [
+        "//tools/sphinx:plantuml",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+sphinx_docs(
+    name = "docs_needs",
+    srcs = [
+        ":generate_sphinx",
+        "ubproject.toml",
+        "schemas.json",
+    ],
+    deps = [],
+    renamed_srcs = {},
+    config = "conf.py",
+    extra_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
+    ],
+    formats = [
+        "needs",
     ],
     sphinx = "//tools/sphinx:sphinx_build",
     tags = [],
