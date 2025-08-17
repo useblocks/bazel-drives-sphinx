@@ -1,0 +1,105 @@
+load("//cfg_bazel:config.bzl", "generate_component_config")
+load("//tools/sphinx/dynamic_project:generate.bzl", "generate_sphinx_project")
+load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
+
+components = [
+    'ac',
+    'dc',
+]
+
+# Generate all component-specific configuration, will produce the :files target
+generate_component_config(
+    name='acdc',
+    components=components
+)
+
+generate_sphinx_project(
+    name = "generate_sphinx",
+    title = "Bazel Drives Sphinx ACDC",
+    all_docs = ":files",
+    strip_prefix = "projects/webapp/",  # Strip the package path from input files
+    generate_script = "//tools/sphinx/dynamic_project:generator",
+    index_template = "//tools/sphinx/dynamic_project:index_template",
+    visibility = ["//visibility:public"],
+)
+
+sphinx_docs(
+    name = "docs_html",
+    srcs = [
+        ":generate_sphinx",
+        "ubproject.toml",
+        "schemas.json",
+    ],
+    deps = [],
+    renamed_srcs = {},
+    config = "conf.py",
+    extra_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
+    ],
+    formats = [
+        "html",
+    ],
+    sphinx = "//tools/sphinx:sphinx_build",
+    tags = [],
+    tools = [
+        "//tools/sphinx:plantuml",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+sphinx_docs(
+    name = "docs_schema",
+    srcs = [
+        ":generate_sphinx",
+        "ubproject.toml",
+        "schemas.json",
+    ],
+    deps = [],
+    renamed_srcs = {},
+    config = "conf.py",
+    extra_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
+    ],
+    formats = [
+        "schema",
+    ],
+    sphinx = "//tools/sphinx:sphinx_build",
+    tags = [],
+    tools = [
+        "//tools/sphinx:plantuml",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+sphinx_docs(
+    name = "docs_needs",
+    srcs = [
+        ":generate_sphinx",
+        "ubproject.toml",
+        "schemas.json",
+    ],
+    deps = [],
+    renamed_srcs = {},
+    config = "conf.py",
+    extra_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
+    ],
+    formats = [
+        "needs",
+    ],
+    sphinx = "//tools/sphinx:sphinx_build",
+    tags = [],
+    tools = [
+        "//tools/sphinx:plantuml",
+    ],
+    visibility = ["//visibility:public"],
+)

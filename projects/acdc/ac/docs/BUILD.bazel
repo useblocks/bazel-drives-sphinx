@@ -1,0 +1,13 @@
+filegroup(
+    name = "docs_all",
+    srcs = [
+        ":docs_trace",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "docs_trace",
+    srcs = ["lots_of_ac.rst"],
+    visibility = ["//visibility:public"],
+)
