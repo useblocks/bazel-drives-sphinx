@@ -17,7 +17,7 @@ generate_sphinx_project(
     name = "generate_sphinx",
     title = "Bazel Drives Sphinx ACDC",
     all_docs = ":files",
-    strip_prefix = "projects/webapp/",  # Strip the package path from input files
+    strip_prefix = package_name() + "/",
     generate_script = "//tools/sphinx/dynamic_project:generator",
     index_template = "//tools/sphinx/dynamic_project:index_template",
     visibility = ["//visibility:public"],
