@@ -32,6 +32,8 @@ sphinx_docs(
         ":generate_sphinx",
         "ubproject.toml",
         "schemas.json",
+        "//projects/webapp:docs_needs",
+        "//projects/acdc:docs_needs",
     ],
     deps = [],
     renamed_srcs = {},

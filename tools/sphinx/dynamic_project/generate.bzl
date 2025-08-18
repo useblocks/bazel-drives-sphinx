@@ -25,8 +25,11 @@ def _generate_sphinx_project_impl(ctx):
     for needs_json in ctx.files.needs_json_labels:
         args.add("--needs-json", needs_json.short_path)
 
+    # Ensure needs_json_labels are included in inputs
+    inputs = [ctx.file.index_template] + ctx.files.all_docs + ctx.files.needs_json_labels
+
     ctx.actions.run(
-        inputs = [ctx.file.index_template] + ctx.files.all_docs + ctx.files.needs_json_labels,
+        inputs = inputs,
         outputs = [output_dir],
         executable = ctx.executable.generate_script,
         arguments = [args],

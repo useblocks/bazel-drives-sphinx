@@ -97,38 +97,23 @@ def generate_sphinx_structure(
             # Look for the pattern that indicates this is a needs build output
             if "_build" in path_parts and "needs" in path_parts:
                 # Find the project name (e.g., 'webapp', 'acdc')
-                # project_idx = None
-                # for i, part in enumerate(path_parts):
-                #     if part == "projects" and i + 1 < len(path_parts):
-                #         project_idx = i + 1
-                #         break
+                project_idx = None
+                for i, part in enumerate(path_parts):
+                    if part == "projects" and i + 1 < len(path_parts):
+                        project_idx = i + 1
+                        break
 
-                # if project_idx:
-                #     project_name = path_parts[project_idx]
-                #     # Create relative path to the needs.json file
-                # relative_dir = f"../../../{needs_json_path}"
-                # relative_path = f"{relative_dir}/needs.json"
+                relative_dir = f"../../../{needs_json_path}"
+                relative_path = f"{relative_dir}/needs.json"
 
-                bazel_root_abs = index_path.parent.parent.parent.parent.resolve()
-                json_builder_dir = bazel_root_abs / needs_json_path
-                # print(f"Files in directory {json_builder_dir}:")
-                # if json_builder_dir.exists() and json_builder_dir.is_dir():
-                #     for file in json_builder_dir.iterdir():
-                #         print(f"  {file}\n")
-                # else:
-                #     print("  Directory does not exist or is not a directory")
-                needs_json_path = json_builder_dir / "needs.json"
-                # if needs_json_path.exists():
-                #     print(f"Contents of {needs_json_path}:")
-                #     with open(needs_json_path, "r") as f:
-                #         print(f.read())
-                # else:
-                #     print(f"File {needs_json_path} does not exist")
+                if project_idx:
+                    import_title = f"Project {path_parts[project_idx]} needs.json"
+                else:
+                    import_title = f"{needs_json_file}/needs.json"
 
-                import_title = f'{needs_json_file}/needs.json'
-                needimport_entries.append(f'{import_title}')
-                needimport_entries.append('^' * len(import_title) + '\n')
-                needimport_entries.append(f".. needimport:: /{needs_json_path}\n")
+                needimport_entries.append(f"{import_title}")
+                needimport_entries.append("^" * len(import_title) + "\n")
+                needimport_entries.append(f".. needimport:: {relative_path}\n")
 
     # Replace placeholders in template
     toctree_content = "\n   ".join(toctree_entries)
