@@ -42,7 +42,7 @@ sphinx_docs(
         "-W",
         "--keep-going",
         "-d",
-        "doctrees-throw-away",  # don't store those in the output, no incremental build
+        "doctrees-throw-away",
     ],
     formats = [
         "html",
@@ -71,7 +71,7 @@ sphinx_docs(
         "-W",
         "--keep-going",
         "-d",
-        "doctrees-throw-away",  # don't store those in the output, no incremental build
+        "doctrees-throw-away",
     ],
     formats = [
         "schema",
@@ -100,7 +100,7 @@ sphinx_docs(
         "-W",
         "--keep-going",
         "-d",
-        "doctrees-throw-away",  # don't store those in the output, no incremental build
+        "doctrees-throw-away",
     ],
     formats = [
         "needs",
