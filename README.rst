@@ -47,6 +47,9 @@ variant management or other dynamic behavior in Sphinx-Needs.
 The original file/folder structure of the docs sources is kept,
 as it can affect the documentation generation process, e.g. because the docname is examined by Sphinx extensions.
 
+.. figure:: architecture.drawio.png
+   :caption: Architecture overview of the Bazel-driven Sphinx documentation system
+
 Getting Started
 ---------------
 
