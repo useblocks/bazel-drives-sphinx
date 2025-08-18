@@ -119,19 +119,15 @@ The project is organized to demonstrate modular documentation management with Ba
   │               ├── BUILD.bazel
   │               └── index.rst       # Cross-project needs tables
   └── tools/                          # Build tooling
-      ├── sphinx/                     # Sphinx build configuration
-      │   ├── BUILD.bazel             # Sphinx build binary and requirements
-      │   ├── requirements.in         # Python dependencies specification
-      │   ├── requirements.txt        # Locked Python dependencies
-      │   └── dynamic_project/        # Dynamic Sphinx project generation
-      │       ├── BUILD.bazel         # Generator targets
-      │       ├── generate.bzl        # Custom Bazel rule for project generation
-      │       ├── generator.py        # Python script for project assembly
-      │       └── index.rst.template  # Index template with toctree and needimport placeholders
-      └── generate_project/           # Legacy project generator
-          ├── BUILD.bazel             # Legacy generator targets
-          ├── generate.bzl            # Legacy custom Bazel rule
-          └── generate_project.py     # Legacy Python script
+      └── sphinx/                     # Sphinx build configuration
+          ├── BUILD.bazel             # Sphinx build binary and requirements
+          ├── requirements.in         # Python dependencies specification
+          ├── requirements.txt        # Locked Python dependencies
+          └── dynamic_project/        # Dynamic Sphinx project generation
+              ├── BUILD.bazel         # Generator targets
+              ├── generate.bzl        # Custom Bazel rule for project generation
+              ├── generator.py        # Python script for project assembly
+              └── index.rst.template  # Index template with toctree and needimport placeholders
 
 **Key Components:**
 
