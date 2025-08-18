@@ -55,56 +55,60 @@ sphinx_docs(
     visibility = ["//visibility:public"],
 )
 
-# sphinx_docs(
-#     name = "docs_schema",
-#     srcs = [
-#         ":generate_sphinx",
-#         "ubproject.toml",
-#         "schemas.json",
-#     ],
-#     deps = [],
-#     renamed_srcs = {},
-#     config = "conf.py",
-#     extra_opts = [
-#         "-W",
-#         "--keep-going",
-#         "-d",
-#         "doctrees-throw-away",  # don't store those in the output, no incremental build
-#     ],
-#     formats = [
-#         "schema",
-#     ],
-#     sphinx = "//tools/sphinx:sphinx_build",
-#     tags = [],
-#     tools = [
-#         "//tools/sphinx:plantuml",
-#     ],
-#     visibility = ["//visibility:public"],
-# )
+sphinx_docs(
+    name = "docs_schema",
+    srcs = [
+        ":generate_sphinx",
+        "ubproject.toml",
+        "schemas.json",
+        "//projects/webapp:docs_needs",
+        "//projects/acdc:docs_needs",
+    ],
+    deps = [],
+    renamed_srcs = {},
+    config = "conf.py",
+    extra_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
+    ],
+    formats = [
+        "schema",
+    ],
+    sphinx = "//tools/sphinx:sphinx_build",
+    tags = [],
+    tools = [
+        "//tools/sphinx:plantuml",
+    ],
+    visibility = ["//visibility:public"],
+)
 
-# sphinx_docs(
-#     name = "docs_needs",
-#     srcs = [
-#         ":generate_sphinx",
-#         "ubproject.toml",
-#         "schemas.json",
-#     ],
-#     deps = [],
-#     renamed_srcs = {},
-#     config = "conf.py",
-#     extra_opts = [
-#         "-W",
-#         "--keep-going",
-#         "-d",
-#         "doctrees-throw-away",  # don't store those in the output, no incremental build
-#     ],
-#     formats = [
-#         "needs",
-#     ],
-#     sphinx = "//tools/sphinx:sphinx_build",
-#     tags = [],
-#     tools = [
-#         "//tools/sphinx:plantuml",
-#     ],
-#     visibility = ["//visibility:public"],
-# )
+sphinx_docs(
+    name = "docs_needs",
+    srcs = [
+        ":generate_sphinx",
+        "ubproject.toml",
+        "schemas.json",
+        "//projects/webapp:docs_needs",
+        "//projects/acdc:docs_needs",
+    ],
+    deps = [],
+    renamed_srcs = {},
+    config = "conf.py",
+    extra_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",  # don't store those in the output, no incremental build
+    ],
+    formats = [
+        "needs",
+    ],
+    sphinx = "//tools/sphinx:sphinx_build",
+    tags = [],
+    tools = [
+        "//tools/sphinx:plantuml",
+    ],
+    visibility = ["//visibility:public"],
+)
