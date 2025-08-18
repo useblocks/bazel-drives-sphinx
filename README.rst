@@ -2,7 +2,7 @@ Let Bazel drive Sphinx
 ======================
 
 This project demonstrates how to use Bazel to collect reStructuredText (RST) files from various components
-and generate a Sphinx documentation project.
+and generate a Sphinx documentation project with multi-project support and cross-project traceability.
 
 That enables modular requirement tracing with `Sphinx-Needs <https://sphinx-needs.readthedocs.io>`__ in
 large scale build setups in which Bazel decides about the inclusion or exclusion of components to the overall build.
@@ -10,18 +10,19 @@ Bazel effectively replaces the build system part of Sphinx.
 
 Goals
 
-- Bazel decides which single RSTs or groups of RSTs to build
+- Bazel decides which single RSTs or groups of RSTs to build across multiple projects
 - Bazel ``build`` targets are used for isolation (instead of ``run`` targets)
 - Sphinx is used to generate the documentation from the collected RST files
 - The collected RST files do not contain ``.. toctree::`` directives as those are provided by a rule programmatically.
   While users could do that, there is a danger that Bazel decides to exclude toctree RST files so Sphinx will complain.
 - Sphinx will run the build and safely complain if there are missing files or references.
-- Sphinx-Needs is used and works in the setup.
+- Sphinx-Needs is used and works in the setup with cross-project traceability.
 - The new schema validation feature of Sphinx-Needs is used to ensure that the documentation schema is valid.
 - Dedicated Bazel goal for a fast schema validation with Sphinx-Needs based on the new ``schema`` builder.
 - The original file structure of RSTs is kept, so that the docname variable is not affected.
   This is helpful when needs schema validation is done based on the contained folder structure.
-- The needs.json file is generated along the Sphinx output for each builder.
+- The needs.json file is generated along the Sphinx output for each builder and can be imported across projects.
+- Cross-project need imports enable integration testing and overall system documentation.
 
 The solution assumes a safe subset of Sphinx/Sphinx-Needs features are used (to be documented).
 E.g. linking to a headline in a Bazel excluded file will naturally fail or linking to a need that is not included.
@@ -50,95 +51,173 @@ Getting Started
 ---------------
 
 To get started with this project, ensure you have `Bazelisk <https://github.com/bazelbuild/bazelisk>`__ installed.
-It will get the correct version of Bazel.
+It will get the correct version of Bazel. It also install a symlink ``bazel`` to the ``bazelisk`` binary which
+can be used as a drop-in replacement for ``bazel``.
 
 You can then build the documentation by running the appropriate Bazel commands.
 
 Project Structure
 -----------------
 
-The project is organized to demonstrate modular documentation management with Bazel::
+The project is organized to demonstrate modular documentation management with Bazel across multiple projects::
 
   bazel-drives-sphinx/
   ├── MODULE.bazel                    # Bazel module configuration
   ├── BUILD.bazel                     # Root build file
   ├── README.rst                      # This file
-  ├── docs/                           # Documentation source components
-  │   └── components/                 # Modular documentation components
-  │       ├── BUILD.bazel             # Aggregation of component groups
-  │       ├── api/                    # API documentation
-  │       │   ├── BUILD.bazel         # API docs filegroup
-  │       │   ├── endpoints/
-  │       │   │   └── endpoints.rst
-  │       │   └── responses.rst
-  │       ├── auth/                   # Authentication documentation
-  │       │   ├── BUILD.bazel         # Auth docs filegroup
-  │       │   ├── authentication.rst
-  │       │   └── authorization.rst
-  │       └── schema_fail/            # Example with validation errors
-  │           ├── BUILD.bazel
-  │           └── index.rst
+  ├── cfg_bazel/                      # Component configuration system
+  │   ├── BUILD.bazel                 # Config generation rules
+  │   └── config.bzl                  # Dynamic component selection logic
+  ├── projects/                       # Multi-project structure
+  │   ├── acdc/                       # ACDC project (AC/DC components)
+  │   │   ├── BUILD.bazel             # Project build configuration
+  │   │   ├── conf.py                 # Sphinx configuration
+  │   │   ├── schemas.json            # Project-specific schema definitions
+  │   │   ├── ubproject.toml          # Sphinx-Needs project configuration
+  │   │   ├── ac/                     # AC component
+  │   │   │   └── docs/               # AC documentation
+  │   │   │       ├── BUILD.bazel     # Component docs filegroups
+  │   │   │       └── lots_of_ac.rst
+  │   │   └── dc/                     # DC component
+  │   │       └── docs/               # DC documentation
+  │   │           ├── BUILD.bazel     # Component docs filegroups
+  │   │           └── lots_of_dc.rst
+  │   ├── webapp/                     # Web application project
+  │   │   ├── BUILD.bazel             # Project build configuration
+  │   │   ├── conf.py                 # Sphinx configuration
+  │   │   ├── schemas.json            # Project-specific schema definitions
+  │   │   ├── ubproject.toml          # Sphinx-Needs project configuration
+  │   │   ├── api/                    # API component
+  │   │   │   └── docs/               # API documentation
+  │   │   │       ├── BUILD.bazel     # Component docs filegroups
+  │   │   │       ├── responses.rst
+  │   │   │       └── endpoints/
+  │   │   │           └── endpoints.rst
+  │   │   ├── auth/                   # Authentication component
+  │   │   │   └── docs/               # Auth documentation
+  │   │   │       ├── BUILD.bazel     # Component docs filegroups
+  │   │   │       ├── index.rst
+  │   │   │       ├── intro.rst
+  │   │   │       └── trace/          # Traceability artifacts
+  │   │   │           ├── authentication.rst
+  │   │   │           └── authorization.rst
+  │   │   └── schema_fail/            # Example with validation errors
+  │   │       └── docs/
+  │   │           ├── BUILD.bazel
+  │   │           └── index.rst
+  │   └── integration/                # Integration project
+  │       ├── BUILD.bazel             # Cross-project integration
+  │       ├── conf.py                 # Sphinx configuration
+  │       ├── schemas.json            # Integration schema definitions
+  │       ├── ubproject.toml          # Sphinx-Needs project configuration
+  │       └── overall/                # Overall integration component
+  │           └── docs/
+  │               ├── BUILD.bazel
+  │               └── index.rst       # Cross-project needs tables
   └── tools/                          # Build tooling
-      ├── dynamic_project/           # Sphinx project generation
-      │   ├── BUILD.bazel             # Generator targets with config_setting
-      │   ├── generate.bzl            # Custom Bazel rule
-      │   ├── dynamic_project.py     # Python script for project assembly
-      │   ├── conf.py                 # Sphinx configuration template
-      │   ├── index.rst.template      # Index template with toctree placeholder
-      │   ├── schemas.json            # Sphinx-Needs schema definitions
-      │   └── ubproject.toml          # Project-specific Sphinx-Needs config
-      └── sphinx/                     # Sphinx build configuration
-          ├── BUILD.bazel             # sphinx_docs targets for HTML and schema
-          ├── requirements.in         # Python dependencies specification
-          └── requirements.txt        # Locked Python dependencies
+      ├── sphinx/                     # Sphinx build configuration
+      │   ├── BUILD.bazel             # Sphinx build binary and requirements
+      │   ├── requirements.in         # Python dependencies specification
+      │   ├── requirements.txt        # Locked Python dependencies
+      │   └── dynamic_project/        # Dynamic Sphinx project generation
+      │       ├── BUILD.bazel         # Generator targets
+      │       ├── generate.bzl        # Custom Bazel rule for project generation
+      │       ├── generator.py        # Python script for project assembly
+      │       └── index.rst.template  # Index template with toctree and needimport placeholders
+      └── generate_project/           # Legacy project generator
+          ├── BUILD.bazel             # Legacy generator targets
+          ├── generate.bzl            # Legacy custom Bazel rule
+          └── generate_project.py     # Legacy Python script
 
 **Key Components:**
 
-- **Component Selection**: ``docs/components/BUILD.bazel`` defines filegroups for different documentation sets
-  (``all``, ``api``, ``auth``, ``minimal``, ``schema_fail``)
-- **Dynamic Generation**: ``tools/dynamic_project/dynamic_project.py`` script collects selected RST files and
-  generates a complete Sphinx project structure with proper toctree directives
-- **Build Variants**: ``tools/dynamic_project/BUILD.bazel`` uses ``config_setting`` and ``select()``
-  to switch between documentation sets based on command-line flags
-- **Sphinx Integration**: ``tools/sphinx/BUILD.bazel`` contains ``sphinx_docs`` rules that process the generated
-  project structure with both HTML and schema validation builders
-- **Modular Dependencies**: Each component in ``docs/components/`` has its own BUILD file, allowing Bazel to
-  track dependencies and only rebuild what's necessary
+- **Multi-Project Architecture**: Each project (``acdc``, ``webapp``, ``integration``) has its own Sphinx configuration,
+  schema definitions, and component structure
+- **Component Selection**: `cfg_bazel/config.bzl`_ provides dynamic component selection with
+  ``--define`` flags for including/excluding components and trace-only builds
+- **Dynamic Generation**: `tools/sphinx/dynamic_project/generator.py`_ script collects selected RST files and
+  generates complete Sphinx project structures with proper toctree directives and needimport statements
+- **Cross-Project Traceability**: The integration project demonstrates importing needs.json files from other projects
+  using the ``needs_json_labels`` attribute in `tools/sphinx/dynamic_project/generate.bzl`_
+- **Build Variants**: Each project supports multiple build formats (``docs_html``, ``docs_schema``, ``docs_needs``)
+  for different validation and output requirements
+- **Modular Dependencies**: Each component has separate ``docs_all`` and ``docs_trace`` filegroups, allowing
+  selective inclusion of full documentation or trace-only artifacts
+- **Schema Validation**: Project-specific `schemas.json`_ files define validation rules for Sphinx-Needs
 
-This structure enables selective documentation builds where Bazel determines which components to include, while Sphinx handles the actual documentation generation with full markup, validation and cross-referencing capabilities.
+**Needs.json Integration:**
+
+The system supports cross-project need imports through a sophisticated mechanism:
+
+1. **Generation**: Each project can generate a ``needs.json`` file using the ``docs_needs`` target (e.g., ``//projects/webapp:docs_needs``)
+2. **Import**: Other projects can reference these needs.json files via the ``needs_json_labels`` attribute
+3. **Template Integration**: The `index.rst.template`_ includes a ``{{ needimports }}`` placeholder
+4. **Automatic Directives**: The generator automatically creates ``.. needimport::`` directives for cross-project traceability
+
+This enables integration projects like `projects/integration`_ to import and display needs from multiple source projects,
+creating comprehensive traceability matrices and cross-project validation.
+
+This structure enables selective documentation builds where Bazel determines which components to include, while Sphinx handles the actual documentation generation with full markup, validation and cross-referencing capabilities across multiple projects.
 
 Building Documentation
 ----------------------
 
-For the repo root, build the documentation of all components with::
+**Single Project Builds:**
 
-  bazelisk build //tools/sphinx:docs_html
+Build the ACDC project documentation::
 
-Make it explicit to build all (above command uses the default value ``docs_group=all``)::
+  bazelisk build //projects/acdc:docs_html
 
-  bazelisk build //tools/sphinx:docs_html --define=docs_group=all
+Build the webapp project documentation::
 
-Only build the docs for the ``api`` component::
+  bazelisk build //projects/webapp:docs_html
 
-  bazelisk build //tools/sphinx:docs_html --define=docs_group=api
+Build the integration project (with cross-project imports)::
 
-Only build the docs for the ``auth`` component::
+  bazelisk build //projects/integration:docs_html
 
-  bazelisk build //tools/sphinx:docs_html --define=docs_group=auth
+**Component Selection:**
 
-Only build the docs for one file of the ``api`` component::
+Use bit-mode to build only specific components within a project::
 
-  bazelisk build //tools/sphinx:docs_html --define=docs_group=minimal
+  # Build only the 'api' component from webapp
+  bazelisk build //projects/webapp:docs_html --define=use_incl_bits=true --define=incl_webapp_api=true
 
-To see the schema validation fail for network links while also building the HTML::
+  # Build only the 'ac' component from acdc
+  bazelisk build //projects/acdc:docs_html --define=use_incl_bits=true --define=incl_acdc_ac=true
 
-  bazelisk build //tools/sphinx:docs_html --define=docs_group=schema_fail
+  # Build multiple components
+  bazelisk build //projects/webapp:docs_html --define=use_incl_bits=true --define=incl_webapp_api=true --define=incl_webapp_auth=true
 
-To see the schema validation fail for network links without emitting HTML (much faster)::
+**Trace-Only Builds:**
 
-  bazelisk build //tools/sphinx:docs_schema --define=docs_group=schema_fail
+Build only traceability artifacts (faster for validation)::
 
-Observe how the build fails for the last one as a headline reference is missing.
+  bazelisk build //projects/webapp:docs_html --define=trace_only=true
+
+**Schema Validation:**
+
+Run fast schema validation without generating HTML::
+
+  bazelisk build //projects/webapp:docs_schema
+  bazelisk build //projects/acdc:docs_schema
+
+**Needs.json Generation:**
+
+Generate needs.json files for cross-project import::
+
+  bazelisk build //projects/webapp:docs_needs
+  bazelisk build //projects/acdc:docs_needs
+
+**Legacy Component Selection (tools/generate_project):**
+
+The legacy system still supports the original component selection mechanism::
+
+  bazelisk build //tools/generate_project:generate --define=docs_group=api
+  bazelisk build //tools/generate_project:generate --define=docs_group=auth
+  bazelisk build //tools/generate_project:generate --define=docs_group=schema_fail
+
+Observe how the build fails for schema_fail as validation errors are present.
 Sphinx runs with ``-W`` which makes the build fail on each warning.
 
 Updating dependencies
@@ -146,3 +225,10 @@ Updating dependencies
 
 1. Modify tools/sphinx/requirements.in
 2. Run ``bazel run //tools/sphinx:requirements.update``
+
+.. _cfg_bazel/config.bzl: cfg_bazel/config.bzl
+.. _tools/sphinx/dynamic_project/generator.py: tools/sphinx/dynamic_project/generator.py
+.. _tools/sphinx/dynamic_project/generate.bzl: tools/sphinx/dynamic_project/generate.bzl
+.. _schemas.json: projects/webapp/schemas.json
+.. _index.rst.template: tools/sphinx/dynamic_project/index.rst.template
+.. _projects/integration: projects/integration/BUILD.bazel
