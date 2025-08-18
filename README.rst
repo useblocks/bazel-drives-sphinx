@@ -154,7 +154,7 @@ The system supports cross-project need imports through a sophisticated mechanism
 3. **Template Integration**: The `index.rst.template`_ includes a ``{{ needimports }}`` placeholder
 4. **Automatic Directives**: The generator automatically creates ``.. needimport::`` directives for cross-project traceability
 
-This enables integration projects like `bazelprojects/integration/BUILD.bazel`_ to import and display needs from multiple source projects,
+This enables integration projects like `projects/integration/BUILD.bazel`_ to import and display needs from multiple source projects,
 creating comprehensive traceability matrices and cross-project validation.
 
 This structure enables selective documentation builds where Bazel determines which components to include, while Sphinx handles the actual documentation generation with full markup, validation and cross-referencing capabilities across multiple projects.
@@ -227,7 +227,7 @@ Updating dependencies
 
 .. _cfg_bazel/config.bzl: cfg_bazel/config.bzl
 .. _index.rst.template: tools/sphinx/dynamic_project/index.rst.template
-.. _bazelprojects/integration/BUILD.bazel: projects/integration/BUILD.bazel
+.. _projects/integration/BUILD.bazel: projects/integration/BUILD.bazel
 .. _projects/webapp/BUILD.bazel: projects/webapp/BUILD.bazel
 .. _schemas.json: projects/webapp/schemas.json
 .. _tools/sphinx/dynamic_project/generate.bzl: tools/sphinx/dynamic_project/generate.bzl
