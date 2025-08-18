@@ -49,7 +49,7 @@ as it can affect the documentation generation process, e.g. because the docname 
 
 .. figure:: architecture.drawio.png
    
-   Architecture overview of the Bazel-driven Sphinx documentation system
+   Architecture overview of the Bazel-driven Sphinx documentation system for example projects and components.
 
 Getting Started
 ---------------
