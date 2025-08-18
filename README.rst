@@ -154,7 +154,7 @@ The system supports cross-project need imports through a sophisticated mechanism
 3. **Template Integration**: The `index.rst.template`_ includes a ``{{ needimports }}`` placeholder
 4. **Automatic Directives**: The generator automatically creates ``.. needimport::`` directives for cross-project traceability
 
-This enables integration projects like `projects/integration`_ to import and display needs from multiple source projects,
+This enables integration projects like `bazelprojects/integration/BUILD.bazel`_ to import and display needs from multiple source projects,
 creating comprehensive traceability matrices and cross-project validation.
 
 This structure enables selective documentation builds where Bazel determines which components to include, while Sphinx handles the actual documentation generation with full markup, validation and cross-referencing capabilities across multiple projects.
@@ -175,6 +175,16 @@ Build the webapp project documentation::
 Build the integration project (with cross-project imports)::
 
   bazel build //projects/integration:docs_html
+
+See schema validation failing for the webbapp project:
+
+1. In `projects/webapp/BUILD.bazel`_ uncomment the ``schema_fail`` component.
+2. Run the build command again::
+
+     bazel build //projects/webapp:docs_schema
+
+Observe how the build fails as validation errors are present.
+Sphinx runs with ``-W`` which makes the build fail on each warning.
 
 **Component Selection:**
 
@@ -209,17 +219,6 @@ Generate needs.json files for cross-project import::
   bazel build //projects/webapp:docs_needs
   bazel build //projects/acdc:docs_needs
 
-**Legacy Component Selection (tools/generate_project):**
-
-The legacy system still supports the original component selection mechanism::
-
-  bazel build //tools/generate_project:generate --define=docs_group=api
-  bazel build //tools/generate_project:generate --define=docs_group=auth
-  bazel build //tools/generate_project:generate --define=docs_group=schema_fail
-
-Observe how the build fails for schema_fail as validation errors are present.
-Sphinx runs with ``-W`` which makes the build fail on each warning.
-
 Updating dependencies
 ---------------------
 
@@ -227,8 +226,9 @@ Updating dependencies
 2. Run ``bazel run //tools/sphinx:requirements.update``
 
 .. _cfg_bazel/config.bzl: cfg_bazel/config.bzl
-.. _tools/sphinx/dynamic_project/generator.py: tools/sphinx/dynamic_project/generator.py
-.. _tools/sphinx/dynamic_project/generate.bzl: tools/sphinx/dynamic_project/generate.bzl
-.. _schemas.json: projects/webapp/schemas.json
 .. _index.rst.template: tools/sphinx/dynamic_project/index.rst.template
-.. _projects/integration: projects/integration/BUILD.bazel
+.. _bazelprojects/integration/BUILD.bazel: projects/integration/BUILD.bazel
+.. _projects/webapp/BUILD.bazel: projects/webapp/BUILD.bazel
+.. _schemas.json: projects/webapp/schemas.json
+.. _tools/sphinx/dynamic_project/generate.bzl: tools/sphinx/dynamic_project/generate.bzl
+.. _tools/sphinx/dynamic_project/generator.py: tools/sphinx/dynamic_project/generator.py
