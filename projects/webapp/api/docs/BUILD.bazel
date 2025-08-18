@@ -1,16 +1,15 @@
 filegroup(
-    name = "docs",
+    name = "docs_all",
     srcs = [
-        "endpoints/endpoints.rst",
+        ":docs_trace",
         "responses.rst",
+        "endpoints/endpoints.rst",
     ],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "responses",
-    srcs = [
-        "responses.rst",
-    ],
+    name = "docs_trace",
+    srcs = [],
     visibility = ["//visibility:public"],
 )

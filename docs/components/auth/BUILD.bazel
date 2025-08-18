@@ -1,8 +1,0 @@
-filegroup(
-    name = "docs",
-    srcs = [
-        "authentication.rst",
-        "authorization.rst",
-    ],
-    visibility = ["//visibility:public"],
-)

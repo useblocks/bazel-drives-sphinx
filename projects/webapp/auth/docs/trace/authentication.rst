@@ -5,10 +5,13 @@ This document provides information about the authentication process in the appli
 
 .. req:: A requirement related to Authentication
    :id: R_AUTH_001
+   :asil: B
 
    The app requires **bold** authentication.
 
 .. spec:: A spec related to Authentication
    :id: S_AUTH_001
+   :asil: B
+   :links: R_AUTH_001
 
    The app does authentication.

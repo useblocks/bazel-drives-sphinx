@@ -1,7 +1,0 @@
-filegroup(
-    name = "docs",
-    srcs = [
-        "index.rst",
-    ],
-    visibility = ["//visibility:public"],
-)
