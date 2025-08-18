@@ -166,56 +166,56 @@ Building Documentation
 
 Build the ACDC project documentation::
 
-  bazelisk build //projects/acdc:docs_html
+  bazel build //projects/acdc:docs_html
 
 Build the webapp project documentation::
 
-  bazelisk build //projects/webapp:docs_html
+  bazel build //projects/webapp:docs_html
 
 Build the integration project (with cross-project imports)::
 
-  bazelisk build //projects/integration:docs_html
+  bazel build //projects/integration:docs_html
 
 **Component Selection:**
 
 Use bit-mode to build only specific components within a project::
 
   # Build only the 'api' component from webapp
-  bazelisk build //projects/webapp:docs_html --define=use_incl_bits=true --define=incl_webapp_api=true
+  bazel build //projects/webapp:docs_html --define=use_incl_bits=true --define=incl_webapp_api=true
 
   # Build only the 'ac' component from acdc
-  bazelisk build //projects/acdc:docs_html --define=use_incl_bits=true --define=incl_acdc_ac=true
+  bazel build //projects/acdc:docs_html --define=use_incl_bits=true --define=incl_acdc_ac=true
 
   # Build multiple components
-  bazelisk build //projects/webapp:docs_html --define=use_incl_bits=true --define=incl_webapp_api=true --define=incl_webapp_auth=true
+  bazel build //projects/webapp:docs_html --define=use_incl_bits=true --define=incl_webapp_api=true --define=incl_webapp_auth=true
 
 **Trace-Only Builds:**
 
 Build only traceability artifacts (faster for validation)::
 
-  bazelisk build //projects/webapp:docs_html --define=trace_only=true
+  bazel build //projects/webapp:docs_html --define=trace_only=true
 
 **Schema Validation:**
 
 Run fast schema validation without generating HTML::
 
-  bazelisk build //projects/webapp:docs_schema
-  bazelisk build //projects/acdc:docs_schema
+  bazel build //projects/webapp:docs_schema
+  bazel build //projects/acdc:docs_schema
 
 **Needs.json Generation:**
 
 Generate needs.json files for cross-project import::
 
-  bazelisk build //projects/webapp:docs_needs
-  bazelisk build //projects/acdc:docs_needs
+  bazel build //projects/webapp:docs_needs
+  bazel build //projects/acdc:docs_needs
 
 **Legacy Component Selection (tools/generate_project):**
 
 The legacy system still supports the original component selection mechanism::
 
-  bazelisk build //tools/generate_project:generate --define=docs_group=api
-  bazelisk build //tools/generate_project:generate --define=docs_group=auth
-  bazelisk build //tools/generate_project:generate --define=docs_group=schema_fail
+  bazel build //tools/generate_project:generate --define=docs_group=api
+  bazel build //tools/generate_project:generate --define=docs_group=auth
+  bazel build //tools/generate_project:generate --define=docs_group=schema_fail
 
 Observe how the build fails for schema_fail as validation errors are present.
 Sphinx runs with ``-W`` which makes the build fail on each warning.
