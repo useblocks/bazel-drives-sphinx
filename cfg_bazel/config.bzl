@@ -19,20 +19,12 @@ def generate_component_config(name, project, components):
     - use_incl_bits=true: enable incl_<project>_<component> selection
       (if false or not given, all components are selected)
     - incl_<project>_<component>=true: an enable flag per component
-    - trace_only=true: if true, only the file groups docs_trace are selected for fast
-      traceability validations
 
     Args:
         name: rule invocation name - unused
         project: project name (e.g., 'myproject')
         components: List of component names (e.g., ['api', 'auth', 'schema_fail'])
     """
-
-    # Switch to include trace-only files
-    native.config_setting(
-        name = "trace_only_true",
-        define_values = {"trace_only": "true"},
-    )
 
     # Enable bit-mode: only include components explicitly set via incl_* flags
     native.config_setting(
@@ -90,13 +82,10 @@ def generate_component_config(name, project, components):
         }),
     )
 
+    # Keep legacy 'files' target pointing to all files for backward compatibility
     native.filegroup(
         name = "files",
-        srcs = select({
-            ":trace_only_true": [":component_trace_files"],
-            "//conditions:default": [":component_all_files"],
-        }),
-        # visibility = ["//tools/sphinx/dynamic_project:__pkg__"],
+        srcs = [":component_all_files"],
     )
 
 def generate_sphinx_docs(name, title):
@@ -104,11 +93,11 @@ def generate_sphinx_docs(name, title):
     Generate sphinx_docs targets for a project.
     
     Generates the following targets:
-    - docs_html: HTML documentation (respects trace_only setting)
+    - docs_html: HTML documentation (all files)
     - docs_html_trace: HTML documentation (trace-only files)
-    - docs_needs: needs.json generation (respects trace_only setting)
+    - docs_needs: needs.json generation (all files)
     - docs_needs_trace: needs.json generation (trace-only files)
-    - docs_schema: schema validation (respects trace_only setting)
+    - docs_schema: schema validation (all files)
     - docs_schema_trace: schema validation (trace-only files)
     
     Args:
@@ -120,7 +109,7 @@ def generate_sphinx_docs(name, title):
     generate_sphinx_project(
         name = "generate_sphinx",
         title = title,
-        all_docs = ":files",
+        all_docs = ":component_all_files",
         strip_prefix = native.package_name() + "/",
         generate_script = "//tools/sphinx/dynamic_project:generator",
         index_template = "//tools/sphinx/dynamic_project:index_template",
@@ -162,10 +151,7 @@ def generate_sphinx_docs(name, title):
     # HTML targets
     sphinx_docs(
         name = "docs_html",
-        srcs = base_srcs + select({
-            ":trace_only_true": [":generate_sphinx_trace"],
-            "//conditions:default": [":files", "index.rst"],
-        }),
+        srcs = base_srcs + [":generate_sphinx", "index.rst"],
         formats = ["html"],
         **default_fields,
     )
@@ -173,11 +159,11 @@ def generate_sphinx_docs(name, title):
     sphinx_docs(
         name = "docs_html_trace",
         srcs = base_srcs + [":generate_sphinx_trace"],
-        deps = [],
-        renamed_srcs = {},
         config = "conf.py",
         extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
         formats = ["html"],
+        deps = [],
+        renamed_srcs = {},
         sphinx = "//tools/sphinx:sphinx_build",
         tags = [],
         tools = ["//tools/sphinx:plantuml"],
@@ -187,32 +173,19 @@ def generate_sphinx_docs(name, title):
     # Schema validation targets
     sphinx_docs(
         name = "docs_schema",
-        srcs = base_srcs + select({
-            ":trace_only_true": [":generate_sphinx_trace"],
-            "//conditions:default": [":files", "index.rst"],
-        }),
-        deps = [],
-        renamed_srcs = {},
-        config = "conf.py",
-        extra_opts = common_opts + select({
-            ":trace_only_true": ["-D", "master_doc=docs_generated/index"],
-            "//conditions:default": [],
-        }),
+        srcs = base_srcs + [":generate_sphinx", "index.rst"],
         formats = ["schema"],
-        sphinx = "//tools/sphinx:sphinx_build",
-        tags = [],
-        tools = ["//tools/sphinx:plantuml"],
-        visibility = ["//visibility:public"],
+        **default_fields,
     )
     
     sphinx_docs(
         name = "docs_schema_trace",
         srcs = base_srcs + [":generate_sphinx_trace"],
-        deps = [],
-        renamed_srcs = {},
         config = "conf.py",
         extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
         formats = ["schema"],
+        deps = [],
+        renamed_srcs = {},
         sphinx = "//tools/sphinx:sphinx_build",
         tags = [],
         tools = ["//tools/sphinx:plantuml"],
@@ -222,32 +195,19 @@ def generate_sphinx_docs(name, title):
     # Needs.json generation targets
     sphinx_docs(
         name = "docs_needs",
-        srcs = base_srcs + select({
-            ":trace_only_true": [":generate_sphinx_trace"],
-            "//conditions:default": [":files", "index.rst"],
-        }),
-        deps = [],
-        renamed_srcs = {},
-        config = "conf.py",
-        extra_opts = common_opts + select({
-            ":trace_only_true": ["-D", "master_doc=docs_generated/index"],
-            "//conditions:default": [],
-        }),
+        srcs = base_srcs + [":generate_sphinx", "index.rst"],
         formats = ["needs"],
-        sphinx = "//tools/sphinx:sphinx_build",
-        tags = [],
-        tools = ["//tools/sphinx:plantuml"],
-        visibility = ["//visibility:public"],
+        **default_fields,
     )
     
     sphinx_docs(
         name = "docs_needs_trace",
         srcs = base_srcs + [":generate_sphinx_trace"],
-        deps = [],
-        renamed_srcs = {},
         config = "conf.py",
         extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
         formats = ["needs"],
+        deps = [],
+        renamed_srcs = {},
         sphinx = "//tools/sphinx:sphinx_build",
         tags = [],
         tools = ["//tools/sphinx:plantuml"],

@@ -14,6 +14,4 @@ and if the traceability flag is not set::
     :caption: Contents
     :glob:
 
-    api/docs/index
-    auth/docs/index
-    schema_fail/docs/*
+    **/index

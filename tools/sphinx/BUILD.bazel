@@ -47,7 +47,8 @@ java_binary(
 sphinx_build_binary(
     name = "sphinx_build",
     data = [],
-    deps = all_requirements + [":plantuml"],
+    deps = all_requirements,
+    # deps = all_requirements + [":plantuml"],
     visibility = ["//projects:__subpackages__"],
 )
 
