@@ -1,5 +1,9 @@
 """Generate component-specific config_settings and file selections."""
-def generate_component_config(name, components):
+
+load("//tools/sphinx/dynamic_project:generate.bzl", "generate_sphinx_project")
+load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
+
+def generate_component_config(name, project, components):
     """
     Generate component specific config_settings and selectors.
 
@@ -19,7 +23,8 @@ def generate_component_config(name, components):
       traceability validations
 
     Args:
-        name: project name (e.g., 'myproject')
+        name: rule invocation name - unused
+        project: project name (e.g., 'myproject')
         components: List of component names (e.g., ['api', 'auth', 'schema_fail'])
     """
 
@@ -38,24 +43,24 @@ def generate_component_config(name, components):
     # One config_setting per component bit: --define=incl_<project>_<component>=true
     for component in components:
         native.config_setting(
-            name = "incl_%s_%s_true" % (name, component),
-            define_values = {"incl_%s_%s" % (name, component): "true"},
+            name = "incl_%s_%s_true" % (project, component),
+            define_values = {"incl_%s_%s" % (project, component): "true"},
         )
 
     # Default (no bit-mode): include all components
-    default_all = ["//projects/%s/%s/docs:docs_all" % (name, c) for c in components]
-    default_trace = ["//projects/%s/%s/docs:docs_trace" % (name, c) for c in components]
+    default_all = ["//projects/%s/%s/docs:docs_all" % (project, c) for c in components]
+    default_trace = ["//projects/%s/%s/docs:docs_trace" % (project, c) for c in components]
 
     # Bit-mode: include only components explicitly enabled
     bitmode_all = []
     bitmode_trace = []
     for c in components:
         bitmode_all += select({
-            ":incl_%s_%s_true" % (name, c): ["//projects/%s/%s/docs:docs_all" % (name, c)],
+            ":incl_%s_%s_true" % (project, c): ["//projects/%s/%s/docs:docs_all" % (project, c)],
             "//conditions:default": [],
         })
         bitmode_trace += select({
-            ":incl_%s_%s_true" % (name, c): ["//projects/%s/%s/docs:docs_trace" % (name, c)],
+            ":incl_%s_%s_true" % (project, c): ["//projects/%s/%s/docs:docs_trace" % (project, c)],
             "//conditions:default": [],
         })
 
@@ -91,5 +96,160 @@ def generate_component_config(name, components):
             ":trace_only_true": [":component_trace_files"],
             "//conditions:default": [":component_all_files"],
         }),
-        visibility = ["//tools/sphinx/dynamic_project:__pkg__"],
+        # visibility = ["//tools/sphinx/dynamic_project:__pkg__"],
+    )
+
+def generate_sphinx_docs(name, title):
+    """
+    Generate sphinx_docs targets for a project.
+    
+    Generates the following targets:
+    - docs_html: HTML documentation (respects trace_only setting)
+    - docs_html_trace: HTML documentation (trace-only files)
+    - docs_needs: needs.json generation (respects trace_only setting)
+    - docs_needs_trace: needs.json generation (trace-only files)
+    - docs_schema: schema validation (respects trace_only setting)
+    - docs_schema_trace: schema validation (trace-only files)
+    
+    Args:
+        name: rule invocation name - unused
+        title: project title for the generated Sphinx project
+    """
+    
+    # Generate both regular and trace-only sphinx projects
+    generate_sphinx_project(
+        name = "generate_sphinx",
+        title = title,
+        all_docs = ":files",
+        strip_prefix = native.package_name() + "/",
+        generate_script = "//tools/sphinx/dynamic_project:generator",
+        index_template = "//tools/sphinx/dynamic_project:index_template",
+    )
+    
+    generate_sphinx_project(
+        name = "generate_sphinx_trace",
+        title = title + " (trace only)",
+        all_docs = ":component_trace_files",
+        strip_prefix = native.package_name() + "/",
+        generate_script = "//tools/sphinx/dynamic_project:generator",
+        index_template = "//tools/sphinx/dynamic_project:index_template",
+    )
+    
+    # Common configuration
+    base_srcs = [
+        "ubproject.toml",
+        "schemas.json",
+    ]
+    
+    common_opts = [
+        "-W",
+        "--keep-going",
+        "-d",
+        "doctrees-throw-away",
+    ]
+    
+    default_fields = {
+        "config": "conf.py",
+        "extra_opts": common_opts,
+        "deps": [],
+        "renamed_srcs": {},
+        "sphinx": "//tools/sphinx:sphinx_build",
+        "tags": [],
+        "tools": ["//tools/sphinx:plantuml"],
+        "visibility": ["//visibility:public"],
+    }
+
+    # HTML targets
+    sphinx_docs(
+        name = "docs_html",
+        srcs = base_srcs + select({
+            ":trace_only_true": [":generate_sphinx_trace"],
+            "//conditions:default": [":files", "index.rst"],
+        }),
+        formats = ["html"],
+        **default_fields,
+    )
+    
+    sphinx_docs(
+        name = "docs_html_trace",
+        srcs = base_srcs + [":generate_sphinx_trace"],
+        deps = [],
+        renamed_srcs = {},
+        config = "conf.py",
+        extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
+        formats = ["html"],
+        sphinx = "//tools/sphinx:sphinx_build",
+        tags = [],
+        tools = ["//tools/sphinx:plantuml"],
+        visibility = ["//visibility:public"],
+    )
+    
+    # Schema validation targets
+    sphinx_docs(
+        name = "docs_schema",
+        srcs = base_srcs + select({
+            ":trace_only_true": [":generate_sphinx_trace"],
+            "//conditions:default": [":files", "index.rst"],
+        }),
+        deps = [],
+        renamed_srcs = {},
+        config = "conf.py",
+        extra_opts = common_opts + select({
+            ":trace_only_true": ["-D", "master_doc=docs_generated/index"],
+            "//conditions:default": [],
+        }),
+        formats = ["schema"],
+        sphinx = "//tools/sphinx:sphinx_build",
+        tags = [],
+        tools = ["//tools/sphinx:plantuml"],
+        visibility = ["//visibility:public"],
+    )
+    
+    sphinx_docs(
+        name = "docs_schema_trace",
+        srcs = base_srcs + [":generate_sphinx_trace"],
+        deps = [],
+        renamed_srcs = {},
+        config = "conf.py",
+        extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
+        formats = ["schema"],
+        sphinx = "//tools/sphinx:sphinx_build",
+        tags = [],
+        tools = ["//tools/sphinx:plantuml"],
+        visibility = ["//visibility:public"],
+    )
+    
+    # Needs.json generation targets
+    sphinx_docs(
+        name = "docs_needs",
+        srcs = base_srcs + select({
+            ":trace_only_true": [":generate_sphinx_trace"],
+            "//conditions:default": [":files", "index.rst"],
+        }),
+        deps = [],
+        renamed_srcs = {},
+        config = "conf.py",
+        extra_opts = common_opts + select({
+            ":trace_only_true": ["-D", "master_doc=docs_generated/index"],
+            "//conditions:default": [],
+        }),
+        formats = ["needs"],
+        sphinx = "//tools/sphinx:sphinx_build",
+        tags = [],
+        tools = ["//tools/sphinx:plantuml"],
+        visibility = ["//visibility:public"],
+    )
+    
+    sphinx_docs(
+        name = "docs_needs_trace",
+        srcs = base_srcs + [":generate_sphinx_trace"],
+        deps = [],
+        renamed_srcs = {},
+        config = "conf.py",
+        extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
+        formats = ["needs"],
+        sphinx = "//tools/sphinx:sphinx_build",
+        tags = [],
+        tools = ["//tools/sphinx:plantuml"],
+        visibility = ["//visibility:public"],
     )
