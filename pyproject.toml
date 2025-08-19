@@ -1,0 +1,14 @@
+[project]
+name = "bazel-drives-sphinx"
+version = "0.1.0"
+description = "Helper root project to test Sphinx builds and setup venvs outside of Bazel"
+readme = "README.rst"
+requires-python = ">=3.12"
+dependencies = [
+    "furo>=2025.7.19",
+    "sphinx>=8.2.3",
+    "sphinx-needs>=5.1.0",
+]
+
+[tool.uv.sources]
+sphinx-needs = { git = "https://github.com/useblocks/sphinx-needs.git", rev = "6f90e9908d3b6602f1b64034700cfbc3e24bb0e3" }

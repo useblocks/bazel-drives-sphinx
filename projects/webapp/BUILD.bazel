@@ -5,7 +5,7 @@ load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
 components = [
     'api',
     'auth',
-    # 'schema_fail',
+    'schema_fail',
 ]
 
 # Generate all component-specific configuration, will produce the :files target
@@ -27,10 +27,17 @@ generate_sphinx_project(
 sphinx_docs(
     name = "docs_html",
     srcs = [
-        ":generate_sphinx",
         "ubproject.toml",
         "schemas.json",
-    ],
+    ] + select({
+        ":trace_only_true": [
+            ":generate_sphinx"
+        ],
+        "//conditions:default": [
+            ":files",
+            "index.rst"
+        ],
+    }),
     deps = [],
     renamed_srcs = {},
     config = "conf.py",
@@ -38,8 +45,11 @@ sphinx_docs(
         "-W",
         "--keep-going",
         "-d",
-        "doctrees-throw-away",  # don't store those in the output, no incremental build
-    ],
+        "doctrees-throw-away",
+    ] + select({
+        ":trace_only_true": ["-D", "master_doc=docs_generated/index"],
+        "//conditions:default": [],
+    }),
     formats = [
         "html",
     ],
