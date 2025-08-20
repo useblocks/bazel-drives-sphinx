@@ -12,19 +12,18 @@ Goals
 
 - Sphinx is used to generate the documentation from the collected RST files
 - Sphinx-Needs is used and works in the setup with cross-project traceability.
-- Bazel decides which single RSTs or groups of RSTs to build across multiple projects
+- Bazel decides which single RSTs or groups of RSTs to build across multiple projects (feature flags become possible).
 - Bazel ``build`` targets are used for isolation (instead of ``run`` targets)
-- Cross-project need imports are automatically generated as ``.. needimport::`` directives in separate files.
 - Cross-project needs.json passed using Bazel rules, not via remote URLs, so everything can be built by Bazel locally.
 - Cross-project dependencies using needs.json are managed by Bazel. Multi-step integration projects become possible.
+  Need imports are automatically generated as ``.. needimport::`` directives in separate files.
 - Bazel caches cross-project needs.json files.
 - The original Sphinx structure is preserved: project root ``index.rst`` files use ``*/docs/index`` glob patterns 
   to auto-include generated needimport directives from the ``needimports/docs/`` subdirectory.
-- The collected RST files maintain their original structure without generated ``.. toctree::`` directives.
+  No modifications of user provided ``.. toctree::`` directives.
 - Sphinx will run the build and safely complain if there are missing files or references.
-- Auto-generate per-project Bazel goal for the ``html`` and ``needs`` builders.
 - The new schema validation feature of Sphinx-Needs is used to ensure that the documentation schema is valid.
-- Dedicated per-project Bazel goal for a fast schema validation with Sphinx-Needs based on the new ``schema`` builder.
+- Auto-generate per-project Bazel goals for the ``html``, ``needs`` and ``schema`` builders.
 - The original file structure of RSTs is kept, so that the docname variable is not affected.
   This is helpful when needs schema validation is done based on the contained folder structure.
 
@@ -113,9 +112,9 @@ The project is organized to demonstrate modular documentation management with Ba
   ├── MODULE.bazel                    # Bazel module configuration
   ├── BUILD.bazel                     # Root build file
   ├── README.rst                      # This file
-  ├── cfg_bazel/                      # Component configuration system
-  │   ├── BUILD.bazel                 # Config generation rules
-  │   └── config.bzl                  # Dynamic component selection logic
+  ├── cfg_bazel/                      # Bazel config
+  │   ├── BUILD.bazel                 # Make it a package
+  │   └── config.bzl                  # Bazel rules for Sphinx target generation
   ├── projects/                       # Multi-project structure
   │   ├── acdc/                       # ACDC project (AC/DC components)
   │   │   ├── BUILD.bazel             # Project build configuration (targets dictionary)
@@ -223,8 +222,6 @@ The project is organized to demonstrate modular documentation management with Ba
 
 - **Multi-Project Architecture**: Each project (``acdc``, ``webapp``, ``integration``) has its own Sphinx configuration,
   schema definitions, and component structure with the targets dictionary system
-- **Component Selection**: `cfg_bazel/config.bzl`_ provides dynamic component selection with
-  ``--define`` flags for including/excluding components and trace-only builds
 - **Cross-Project Traceability**: The integration project demonstrates importing needs.json files from other projects
   using the ``needs_json_labels`` attribute in the ``generate_sphinx_docs()`` function call
 - **Build Variants**: Each target group supports multiple build formats (``docs_html``, ``docs_schema``, ``docs_needs``)
