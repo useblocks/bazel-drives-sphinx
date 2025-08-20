@@ -1,0 +1,10 @@
+get_need_id_refs = true
+get_oneline_needs = false
+get_rst = false
+
+[source_discover]
+src_dir = "./src"
+gitignore = true
+
+[need_id_refs]
+markers = ["@need-ids:"]

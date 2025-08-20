@@ -1,1 +1,10 @@
-
+filegroup(
+    name = "git_infos",
+    srcs = glob([
+        ".git/refs/heads/*",
+    ]) + [
+        ".git/HEAD",
+        ".git/config",
+    ],
+    visibility = ["//visibility:public"],
+)

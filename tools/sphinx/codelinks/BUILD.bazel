@@ -1,0 +1,17 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@pip_process//:requirements.bzl", "all_requirements")
+
+
+py_binary(
+    name = "analyse",
+    srcs = ["analyse.py"],
+    deps = all_requirements,
+    visibility = ["//visibility:public"],
+)
+
+py_binary(
+    name = "needextend",
+    srcs = ["needextend.py"],
+    deps = all_requirements,
+    visibility = ["//visibility:public"],
+)
