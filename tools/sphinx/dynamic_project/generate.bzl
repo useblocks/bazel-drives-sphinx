@@ -8,11 +8,11 @@ def _generate_sphinx_project_impl(ctx):
     args.add("--title", ctx.attr.title)
     args.add("--output-dir", output_dir.path)
     args.add("--index-template", ctx.file.index_template.path)
-    
+
     # Add strip_prefix if provided
     if ctx.attr.strip_prefix:
         args.add("--strip-prefix", ctx.attr.strip_prefix)
-    
+
     # Set prefix to "generated" so RST files go into the generated/ subdirectory
     if ctx.attr.prefix:
         args.add("--prefix", ctx.attr.prefix)

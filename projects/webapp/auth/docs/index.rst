@@ -8,8 +8,7 @@ Bazel selects the RST files or not. That means this very file can only be includ
 if the trace/* components are included as well.
 
 .. toctree::
-    :caption: Traceability artifacts
+    :caption: Contents
+    :glob:
 
-    intro
-    trace/authentication
-    trace/authorization
+    **

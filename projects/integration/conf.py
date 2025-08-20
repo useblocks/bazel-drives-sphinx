@@ -12,8 +12,6 @@ extensions = [
     "sphinx_needs",
 ]
 
-master_doc = "docs_generated/index"
-
 templates_path = ["_templates"]
 exclude_patterns = []
 
