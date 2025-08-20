@@ -6,4 +6,4 @@ Webapp API docs
     :glob:
 
     responses
-    endpoints/endpoints
+    endpoints/index

@@ -2,20 +2,27 @@ load("//cfg_bazel:config.bzl", "generate_component_config", "generate_sphinx_doc
 load("//tools/sphinx/dynamic_project:generate.bzl", "generate_sphinx_project")
 # load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
 
-components = [
-    'api',
-    'auth',
-    'schema_fail',
-]
+targets = {
+    'all': [
+        "//projects/webapp/api/docs:docs_all",
+        "//projects/webapp/auth/docs:docs_all",
+        "//projects/webapp/schema_fail/docs:docs_all",
+    ],
+    'trace': [
+        "//projects/webapp/api/docs:docs_trace",
+        "//projects/webapp/auth/docs:docs_trace",
+        "//projects/webapp/schema_fail/docs:docs_trace",
+    ]
+}
 
 # Generate all component-specific configuration, will produce the :files target
-generate_component_config(
-    name='webapp_cfg',
-    project='webapp',
-    components=components
-)
+# generate_component_config(
+#     name='webapp_cfg',
+#     project='webapp',
+#     components=components
+# )
 
 generate_sphinx_docs(
     name = "webapp_docs",
-    title = "WebApp project",
+    targets = targets,
 )

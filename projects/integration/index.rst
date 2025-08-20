@@ -1,10 +1,10 @@
 Integration project
 ===================
 
-This is the Integration project.
+This is the integration project that combines documentation from multiple components.
 
 .. toctree::
-    :caption: Contents
-    :glob:
-
-    **/index
+   :caption: Project Components
+   :glob:
+   
+   */docs/index

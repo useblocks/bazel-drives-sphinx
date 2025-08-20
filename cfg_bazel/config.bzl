@@ -1,6 +1,6 @@
 """Generate component-specific config_settings and file selections."""
 
-load("//tools/sphinx/dynamic_project:generate.bzl", "generate_sphinx_project")
+load("//tools/sphinx/dynamic_needimports:generate.bzl", "generate_sphinx_project")
 load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
 
 def generate_component_config(name, project, components):
@@ -88,53 +88,50 @@ def generate_component_config(name, project, components):
         srcs = [":component_all_files"],
     )
 
-def generate_sphinx_docs(name, title):
+def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
     """
     Generate sphinx_docs targets for a project.
     
-    Generates the following targets:
-    - docs_html: HTML documentation (all files)
-    - docs_html_trace: HTML documentation (trace-only files)
-    - docs_needs: needs.json generation (all files)
-    - docs_needs_trace: needs.json generation (trace-only files)
-    - docs_schema: schema validation (all files)
-    - docs_schema_trace: schema validation (trace-only files)
+    Generates targets based on the targets dictionary keys:
+    For each key in targets, creates:
+    - docs_html_{key}: HTML documentation 
+    - docs_needs_{key}: needs.json generation
+    - docs_schema_{key}: schema validation
     
     Args:
         name: rule invocation name - unused
-        title: project title for the generated Sphinx project
+        targets: dictionary with keys as target suffixes and values as lists of file targets
+                Example: {'all': ["//path:docs_all"], 'trace': ["//path:docs_trace"]}
+        needs_json_labels: list of labels for needs.json files to generate needimports directory
     """
     
-    # Generate both regular and trace-only sphinx projects
-    generate_sphinx_project(
-        name = "generate_sphinx",
-        title = title,
-        all_docs = ":component_all_files",
-        strip_prefix = native.package_name() + "/",
-        generate_script = "//tools/sphinx/dynamic_project:generator",
-        index_template = "//tools/sphinx/dynamic_project:index_template",
-    )
-    
-    generate_sphinx_project(
-        name = "generate_sphinx_trace",
-        title = title + " (trace only)",
-        all_docs = ":component_trace_files",
-        strip_prefix = native.package_name() + "/",
-        generate_script = "//tools/sphinx/dynamic_project:generator",
-        index_template = "//tools/sphinx/dynamic_project:index_template",
-    )
+    # Generate needimports directory for needs.json files
+    if needs_json_labels:
+        generate_sphinx_project(
+            name = "generate_needimports",
+            title = "Need imports",
+            needs_json_labels = needs_json_labels,
+        )
+    else:
+        # Create empty filegroup when no needs_json_labels are provided
+        native.filegroup(
+            name = "generate_needimports",
+            srcs = [],
+            visibility = ["//visibility:public"],
+        )
     
     # Common configuration
     base_srcs = [
         "ubproject.toml",
-        "schemas.json",
+        "schemas.json", 
+        "index.rst",  # Project's main index.rst with toctree :glob: **/index
     ]
     
     common_opts = [
         "-W",
-        "--keep-going",
+        "--keep-going", 
         "-d",
-        "doctrees-throw-away",
+        "doctrees-throw-away",  # no incremental build, don't store those in the output
     ]
     
     default_fields = {
@@ -148,68 +145,64 @@ def generate_sphinx_docs(name, title):
         "visibility": ["//visibility:public"],
     }
 
-    # HTML targets
-    sphinx_docs(
-        name = "docs_html",
-        srcs = base_srcs + [":generate_sphinx", "index.rst"],
-        formats = ["html"],
-        **default_fields,
-    )
+    # Generate targets for each key in the targets dictionary
+    for target_key, file_targets in targets.items():
+        target_srcs = base_srcs + file_targets + [":generate_needimports"]
+        
+        # HTML targets
+        sphinx_docs(
+            name = "docs_html_" + target_key,
+            srcs = target_srcs + needs_json_labels,
+            formats = ["html"],
+            **default_fields,
+        )
+        
+        # Schema validation targets
+        sphinx_docs(
+            name = "docs_schema_" + target_key,
+            srcs = target_srcs,
+            formats = ["schema"],
+            **default_fields,
+        )
+        
+        # Needs.json generation targets
+        sphinx_docs(
+            name = "docs_needs_" + target_key,
+            srcs = target_srcs,
+            formats = ["needs"],
+            **default_fields,
+        )
+
+def generate_needimports_project(name, title, needs_json_labels = []):
+    """Generate a needimports directory with index.rst containing needimport directives."""
     
-    sphinx_docs(
-        name = "docs_html_trace",
-        srcs = base_srcs + [":generate_sphinx_trace"],
-        config = "conf.py",
-        extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
-        formats = ["html"],
-        deps = [],
-        renamed_srcs = {},
-        sphinx = "//tools/sphinx:sphinx_build",
-        tags = [],
-        tools = ["//tools/sphinx:plantuml"],
-        visibility = ["//visibility:public"],
-    )
-    
-    # Schema validation targets
-    sphinx_docs(
-        name = "docs_schema",
-        srcs = base_srcs + [":generate_sphinx", "index.rst"],
-        formats = ["schema"],
-        **default_fields,
-    )
-    
-    sphinx_docs(
-        name = "docs_schema_trace",
-        srcs = base_srcs + [":generate_sphinx_trace"],
-        config = "conf.py",
-        extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
-        formats = ["schema"],
-        deps = [],
-        renamed_srcs = {},
-        sphinx = "//tools/sphinx:sphinx_build",
-        tags = [],
-        tools = ["//tools/sphinx:plantuml"],
-        visibility = ["//visibility:public"],
-    )
-    
-    # Needs.json generation targets
-    sphinx_docs(
-        name = "docs_needs",
-        srcs = base_srcs + [":generate_sphinx", "index.rst"],
-        formats = ["needs"],
-        **default_fields,
-    )
-    
-    sphinx_docs(
-        name = "docs_needs_trace",
-        srcs = base_srcs + [":generate_sphinx_trace"],
-        config = "conf.py",
-        extra_opts = common_opts + ["-D", "master_doc=docs_generated/index"],
-        formats = ["needs"],
-        deps = [],
-        renamed_srcs = {},
-        sphinx = "//tools/sphinx:sphinx_build",
-        tags = [],
-        tools = ["//tools/sphinx:plantuml"],
-        visibility = ["//visibility:public"],
-    )
+    if needs_json_labels:
+        native.genrule(
+            name = name,
+            srcs = needs_json_labels,
+            outs = ["needimports/index.rst"],
+            cmd = """
+            mkdir -p $(RULEDIR)/needimports
+            cat > $(RULEDIR)/needimports/index.rst << 'EOF'
+{title}
+{underline}
+
+{needimports}
+EOF
+            """.format(
+                title = title,
+                underline = "=" * len(title),
+                needimports = "\\n".join([
+                    ".. needimport:: ../{}.json".format(label.replace(":", "/").replace("//", ""))
+                    for label in needs_json_labels
+                ])
+            ),
+            visibility = ["//visibility:public"],
+        )
+    else:
+        # Create empty filegroup when no needs_json_labels are provided
+        native.filegroup(
+            name = name,
+            srcs = [],
+            visibility = ["//visibility:public"],
+        )

@@ -4,7 +4,7 @@ filegroup(
         ":docs_trace",
         "index.rst",
         "responses.rst",
-        "endpoints/endpoints.rst",
+        "endpoints/index.rst",
     ],
     visibility = ["//visibility:public"],
 )

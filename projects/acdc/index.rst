@@ -7,4 +7,4 @@ This is the ACDC project.
     :caption: Contents
     :glob:
 
-    **/index
+    */docs/*

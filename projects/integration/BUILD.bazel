@@ -1,219 +1,36 @@
-load("//cfg_bazel:config.bzl", "generate_component_config")
-load("//tools/sphinx/dynamic_project:generate.bzl", "generate_sphinx_project")
-load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
+load("//cfg_bazel:config.bzl", "generate_component_config", "generate_sphinx_docs", "generate_needimports_project")
 
-components = [
-    'overall',
-]
-
-# Generate all component-specific configuration, will produce the :files target
-generate_component_config(
-    name='integration',
-    project='integration',
-    components=components
-)
-
-generate_sphinx_project(
-    name = "generate_sphinx",
-    title = "Bazel Drives Sphinx Integration",
-    all_docs = ":component_all_files",
-    needs_json_labels = [
-        "//projects/webapp:docs_needs",
-        "//projects/acdc:docs_needs",
+targets = {
+    'all': [
+        "//projects/integration/overall/docs:docs_all",
     ],
-    strip_prefix = package_name() + "/",
-    generate_script = "//tools/sphinx/dynamic_project:generator",
-    index_template = "//tools/sphinx/dynamic_project:index_template",
-    visibility = ["//visibility:public"],
-)
+    'trace': [
+        "//projects/integration/overall/docs:docs_trace",
+    ]
+}
 
-generate_sphinx_project(
-    name = "generate_sphinx_trace",
-    title = "Bazel Drives Sphinx Integration (trace only)",
-    all_docs = ":component_trace_files",
+# Generate component filegroups (docs_all, docs_trace)
+# generate_component_config(
+#     name='integration',
+#     project='integration', 
+#     components=components
+# )
+
+# Generate needimports with cross-project dependencies
+# generate_needimports_project(
+#     name = "generate_needimports",
+#     needs_json_labels = [
+#         "//projects/webapp:docs_needs_trace",
+#         "//projects/acdc:docs_needs_trace", 
+#     ],
+# )
+
+# Generate all 6 sphinx targets
+generate_sphinx_docs(
+    name = "integration_docs",
+    targets = targets,
     needs_json_labels = [
         "//projects/webapp:docs_needs_trace",
-        "//projects/acdc:docs_needs_trace",
+        "//projects/acdc:docs_needs_trace", 
     ],
-    strip_prefix = package_name() + "/",
-    generate_script = "//tools/sphinx/dynamic_project:generator",
-    index_template = "//tools/sphinx/dynamic_project:index_template",
-    visibility = ["//visibility:public"],
-)
-
-sphinx_docs(
-    name = "docs_html",
-    srcs = [
-        ":generate_sphinx",
-        "ubproject.toml",
-        "schemas.json",
-        "//projects/webapp:docs_needs",
-        "//projects/acdc:docs_needs",
-    ],
-    deps = [],
-    renamed_srcs = {},
-    config = "conf.py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "doctrees-throw-away",
-    ],
-    formats = [
-        "html",
-    ],
-    sphinx = "//tools/sphinx:sphinx_build",
-    tags = [],
-    tools = [
-        "//tools/sphinx:plantuml",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-sphinx_docs(
-    name = "docs_html_trace",
-    srcs = [
-        ":generate_sphinx_trace",
-        "ubproject.toml",
-        "schemas.json",
-        "//projects/webapp:docs_needs_trace",
-        "//projects/acdc:docs_needs_trace",
-    ],
-    deps = [],
-    renamed_srcs = {},
-    config = "conf.py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "doctrees-throw-away",
-        "-D", "master_doc=docs_generated/index"
-    ],
-    formats = [
-        "html",
-    ],
-    sphinx = "//tools/sphinx:sphinx_build",
-    tags = [],
-    tools = [
-        "//tools/sphinx:plantuml",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-sphinx_docs(
-    name = "docs_schema",
-    srcs = [
-        ":generate_sphinx",
-        "ubproject.toml",
-        "schemas.json",
-        "//projects/webapp:docs_needs",
-        "//projects/acdc:docs_needs",
-    ],
-    deps = [],
-    renamed_srcs = {},
-    config = "conf.py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "doctrees-throw-away",
-    ],
-    formats = [
-        "schema",
-    ],
-    sphinx = "//tools/sphinx:sphinx_build",
-    tags = [],
-    tools = [
-        "//tools/sphinx:plantuml",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-sphinx_docs(
-    name = "docs_schema_trace",
-    srcs = [
-        ":generate_sphinx_trace",
-        "ubproject.toml",
-        "schemas.json",
-        "//projects/webapp:docs_needs_trace",
-        "//projects/acdc:docs_needs_trace",
-    ],
-    deps = [],
-    renamed_srcs = {},
-    config = "conf.py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "doctrees-throw-away",
-        "-D", "master_doc=docs_generated/index"
-    ],
-    formats = [
-        "schema",
-    ],
-    sphinx = "//tools/sphinx:sphinx_build",
-    tags = [],
-    tools = [
-        "//tools/sphinx:plantuml",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-sphinx_docs(
-    name = "docs_needs",
-    srcs = [
-        ":generate_sphinx",
-        "ubproject.toml",
-        "schemas.json",
-        "//projects/webapp:docs_needs",
-        "//projects/acdc:docs_needs",
-    ],
-    deps = [],
-    renamed_srcs = {},
-    config = "conf.py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "doctrees-throw-away",
-    ],
-    formats = [
-        "needs",
-    ],
-    sphinx = "//tools/sphinx:sphinx_build",
-    tags = [],
-    tools = [
-        "//tools/sphinx:plantuml",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-sphinx_docs(
-    name = "docs_needs_trace",
-    srcs = [
-        ":generate_sphinx_trace",
-        "ubproject.toml",
-        "schemas.json",
-        "//projects/webapp:docs_needs_trace",
-        "//projects/acdc:docs_needs_trace",
-    ],
-    deps = [],
-    renamed_srcs = {},
-    config = "conf.py",
-    extra_opts = [
-        "-W",
-        "--keep-going",
-        "-d",
-        "doctrees-throw-away",
-        "-D", "master_doc=docs_generated/index"
-    ],
-    formats = [
-        "needs",
-    ],
-    sphinx = "//tools/sphinx:sphinx_build",
-    tags = [],
-    tools = [
-        "//tools/sphinx:plantuml",
-    ],
-    visibility = ["//visibility:public"],
 )

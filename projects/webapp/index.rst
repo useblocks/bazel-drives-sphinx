@@ -14,4 +14,4 @@ and if the traceability flag is not set::
     :caption: Contents
     :glob:
 
-    **/index
+    */docs/index
