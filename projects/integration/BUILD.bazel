@@ -1,36 +1,19 @@
-load("//cfg_bazel:config.bzl", "generate_component_config", "generate_sphinx_docs", "generate_needimports_project")
+load("//cfg_bazel:config.bzl", "generate_sphinx_docs")
 
 targets = {
-    'all': [
+    "all": [
         "//projects/integration/overall/docs:docs_all",
     ],
-    'trace': [
+    "trace": [
         "//projects/integration/overall/docs:docs_trace",
-    ]
+    ],
 }
 
-# Generate component filegroups (docs_all, docs_trace)
-# generate_component_config(
-#     name='integration',
-#     project='integration', 
-#     components=components
-# )
-
-# Generate needimports with cross-project dependencies
-# generate_needimports_project(
-#     name = "generate_needimports",
-#     needs_json_labels = [
-#         "//projects/webapp:docs_needs_trace",
-#         "//projects/acdc:docs_needs_trace", 
-#     ],
-# )
-
-# Generate all 6 sphinx targets
 generate_sphinx_docs(
     name = "integration_docs",
-    targets = targets,
     needs_json_labels = [
         "//projects/webapp:docs_needs_trace",
         "//projects/acdc:docs_needs_trace",
     ],
+    targets = targets,
 )

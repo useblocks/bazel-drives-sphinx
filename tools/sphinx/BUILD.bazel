@@ -1,7 +1,7 @@
 load("@pip_process//:requirements.bzl", "all_requirements")
 load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
-load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_build_binary", "sphinx_docs")
+load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_build_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -47,61 +47,7 @@ java_binary(
 sphinx_build_binary(
     name = "sphinx_build",
     data = [],
-    deps = all_requirements,
     # deps = all_requirements + [":plantuml"],
     visibility = ["//projects:__subpackages__"],
+    deps = all_requirements,
 )
-
-# sphinx_docs(
-#     name = "docs_html",
-#     srcs = [
-#         ":schema",
-#         "//ubproject",
-#         "index.rst",
-#         "//tools/sphinx/dynamic_project:generate"
-#     ],
-#     config = "conf.py",
-#     extra_opts = [
-#         "-W",
-#         "--keep-going",
-#         "-d",
-#         "doctrees-throw-away",  # don't store those in the output, no incremental build
-#     ],
-#     formats = [
-#         "html",
-#     ],
-#     sphinx = ":sphinx_build",
-#     strip_prefix = package_name() + "/",
-#     tags = [],
-#     tools = [
-#         ":plantuml",
-#     ],
-#     visibility = ["//visibility:public"],
-# )
-
-# sphinx_docs(
-#     name = "docs_schema",
-#     srcs = [
-#         ":schema",
-#         "//ubproject",
-#         "index.rst",
-#         "//tools/sphinx/dynamic_project:generate"
-#     ],
-#     config = "conf.py",
-#     extra_opts = [
-#         "-W",
-#         "--keep-going",
-#         "-d",
-#         "doctrees-throw-away",  # don't store those in the output, no incremental build
-#     ],
-#     formats = [
-#         "schema",
-#     ],
-#     sphinx = ":sphinx_build",
-#     strip_prefix = package_name() + "/",
-#     tags = [],
-#     tools = [
-#         ":plantuml",
-#     ],
-#     visibility = ["//visibility:public"],
-# )

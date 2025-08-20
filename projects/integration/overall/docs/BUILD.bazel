@@ -9,9 +9,9 @@ filegroup(
 filegroup(
     name = "docs_trace",
     srcs = [
-        'index.rst',
-        'int_reqs.rst',
-        'analytics/index.rst',
+        "index.rst",
+        "int_reqs.rst",
+        "analytics/index.rst",
         # 'int_reqs_fail.rst'
     ],
     visibility = ["//visibility:public"],

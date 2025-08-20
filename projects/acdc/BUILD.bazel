@@ -1,22 +1,15 @@
-load("//cfg_bazel:config.bzl", "generate_component_config", "generate_sphinx_docs")
+load("//cfg_bazel:config.bzl", "generate_sphinx_docs")
 
 targets = {
-    'all': [
-        '//projects/acdc/ac/docs:docs_all',
-        '//projects/acdc/dc/docs:docs_all'
+    "all": [
+        "//projects/acdc/ac/docs:docs_all",
+        "//projects/acdc/dc/docs:docs_all",
     ],
-    'trace': [
-        '//projects/acdc/ac/docs:docs_trace',
-        '//projects/acdc/dc/docs:docs_trace'
+    "trace": [
+        "//projects/acdc/ac/docs:docs_trace",
+        "//projects/acdc/dc/docs:docs_trace",
     ],
 }
-
-# Generate all component-specific configuration, will produce the :files target
-# generate_component_config(
-#     name='acdc',
-#     project='acdc',
-#     components=components
-# )
 
 generate_sphinx_docs(
     name = "acdc_docs",
