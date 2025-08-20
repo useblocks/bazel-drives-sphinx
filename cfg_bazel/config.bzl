@@ -160,7 +160,7 @@ def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
         # Schema validation targets
         sphinx_docs(
             name = "docs_schema_" + target_key,
-            srcs = target_srcs,
+            srcs = target_srcs + needs_json_labels,
             formats = ["schema"],
             **default_fields,
         )
@@ -168,7 +168,7 @@ def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
         # Needs.json generation targets
         sphinx_docs(
             name = "docs_needs_" + target_key,
-            srcs = target_srcs,
+            srcs = target_srcs + needs_json_labels,
             formats = ["needs"],
             **default_fields,
         )

@@ -5,19 +5,30 @@ from pathlib import Path
 # Internal template content
 INDEX_TEMPLATE = """{{ title }}
 
-{{ needimports }}
+.. toctree::
+   :maxdepth: 2
+
+{{ toctree_entries }}
+"""
+
+NEEDS_FILE_TEMPLATE = """{{ project_title }}
+{{ underline }}
+
+.. needimport:: {{ relative_path }}
 """
 
 
 def generate_needimports_structure(
     output_dir, needs_json_files=None, title="Need imports"
 ):
-    """Generate a needimports directory with index.rst containing needimport directives."""
+    """Generate a needimports directory with separate files for each needimport and an index.rst with toctree."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    # Generate needimport directives from needs.json files
-    needimport_entries = []
+    # Generate separate files for each needimport
+    toctree_entries = []
+    created_files = []
+
     if needs_json_files:
         for needs_json_file in needs_json_files:
             # Extract the relative path for the needimport directive
@@ -30,32 +41,50 @@ def generate_needimports_structure(
             # Look for the pattern that indicates this is a needs build output
             if "_build" in path_parts and "needs" in path_parts:
                 # Find the project name (e.g., 'webapp', 'acdc')
-                project_idx = None
+                project_name = None
                 for i, part in enumerate(path_parts):
                     if part == "projects" and i + 1 < len(path_parts):
-                        project_idx = i + 1
+                        project_name = path_parts[i + 1]
                         break
 
-                relative_dir = f"../../../../{needs_json_path}"
-                relative_path = f"{relative_dir}/needs.json"
+                if project_name:
+                    # Create filename for this project's needs
+                    needs_filename = f"{project_name}_needs.rst"
+                    needs_file_path = output_path / needs_filename
 
-                if project_idx:
-                    import_title = f"Project {path_parts[project_idx]}"
-                else:
-                    import_title = f"{needs_json_file}/needs.json"
+                    # Relative path to the needs.json file
+                    relative_dir = f"../../../../{needs_json_path}"
+                    relative_path = f"{relative_dir}/needs.json"
 
-                needimport_entries.append(f"{import_title}")
-                needimport_entries.append("-" * len(import_title) + "\n")
-                needimport_entries.append(f".. needimport:: {relative_path}\n")
+                    # Project title for the needs file
+                    project_title = f"Project {project_name}"
+                    underline = "=" * len(project_title)
 
-    # Replace placeholders in template
-    needimport_content = (
-        "\n".join(needimport_entries)
-        if needimport_entries
-        else "No need imports configured."
+                    # Generate the needs file content
+                    needs_content = NEEDS_FILE_TEMPLATE.replace(
+                        "{{ project_title }}", project_title
+                    )
+                    needs_content = needs_content.replace("{{ underline }}", underline)
+                    needs_content = needs_content.replace(
+                        "{{ relative_path }}", relative_path
+                    )
+
+                    # Write the needs file
+                    with open(needs_file_path, "w") as f:
+                        f.write(needs_content)
+
+                    # Add to toctree (without .rst extension)
+                    toctree_entries.append(f"   {project_name}_needs")
+                    created_files.append(needs_filename)
+
+    # Generate index.rst with toctree
+    toctree_content = (
+        "\n".join(toctree_entries)
+        if toctree_entries
+        else "   No need imports configured"
     )
 
-    index_content = INDEX_TEMPLATE.replace("{{ needimports }}", needimport_content)
+    index_content = INDEX_TEMPLATE.replace("{{ toctree_entries }}", toctree_content)
     final_title = title or "Need imports"
     index_content = index_content.replace(
         "{{ title }}", f"{final_title}\n{len(final_title) * '='}"
@@ -68,7 +97,8 @@ def generate_needimports_structure(
 
     print(f"Generated needimports project in {output_path}")
     print(f"Project title: '{title}'")
-    print(f"Needimport entries: {needimport_entries}")
+    print(f"Created files: {created_files}")
+    print(f"Toctree entries: {toctree_entries}")
 
 
 if __name__ == "__main__":
