@@ -10,8 +10,8 @@ schema_severity = 'warning'
 
 [needs.string_links.codelinks]
 regex = "^(?P<prefix>[^/]+//[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/)(?P<remains>.*)?"
-link_url = "{url}"
-link_name = "{{remains}}"
+link_url = "{{ prefix }}{{ remains }}"
+link_name = "{{ remains }}"
 options = ["src_trace"]
 
 [[needs.extra_options]]
