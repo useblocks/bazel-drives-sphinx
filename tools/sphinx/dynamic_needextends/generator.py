@@ -6,7 +6,7 @@ from pathlib import Path
 # Internal template content
 INDEX_TEMPLATE = """{{ title }}
 
-Included needextends files from the following projects:
+Included needextends files from the following code parts:
 
 {{ project_sections }}
 """
@@ -49,10 +49,10 @@ def generate_needextends_structure(
         try:
             with needextends_abs_path.open("r") as f:
                 file_content = f.read().strip()
-                needextends_content = f'{file_content}\n'
+                needextends_content = f"{file_content}\n"
                 needextends_content += "\n.. code-block:: rst\n\n"
                 # Indent each line with 4 spaces for the code block
-                for line in file_content.split('\n'):
+                for line in file_content.split("\n"):
                     needextends_content += f"    {line}\n"
         except FileNotFoundError:
             needextends_content = f"File not found: {needextends_abs_path}"
