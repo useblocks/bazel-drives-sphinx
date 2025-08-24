@@ -1,0 +1,11 @@
+[codelinks.projects.code.analyse]
+get_need_id_refs = true
+get_oneline_needs = false
+get_rst = false
+
+[codelinks.projects.code.source_discover]
+src_dir = "./src"
+gitignore = true
+
+[codelinks.projects.code.analyse.need_id_refs]
+markers = ["@need-ids:"]

@@ -15,5 +15,8 @@ generate_sphinx_docs(
         "//projects/webapp:docs_needs_trace",
         "//projects/acdc:docs_needs_trace",
     ],
+    needextends_labels = [
+        "//projects/integration/overall:codelinks_needextend",
+    ],
     targets = targets,
 )
