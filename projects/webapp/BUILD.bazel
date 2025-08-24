@@ -16,4 +16,8 @@ targets = {
 generate_sphinx_docs(
     name = "webapp_docs",
     targets = targets,
+    needextends_labels = [
+        "//projects/webapp/auth:codelinks_needextend",
+        "//projects/webapp/schema_fail:codelinks_needextend",
+    ],
 )

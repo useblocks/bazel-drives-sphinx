@@ -1,9 +1,10 @@
 """Generate component-specific config_settings and file selections."""
 
 load("@rules_python//sphinxdocs:sphinx.bzl", "sphinx_docs")
-load("//tools/sphinx/dynamic_needimports:generate.bzl", "generate_sphinx_project")
+load("//tools/sphinx/dynamic_needextends:generate.bzl", "generate_needextends_structure")
+load("//tools/sphinx/dynamic_needimports:generate.bzl", "generate_needimports_structure")
 
-def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
+def generate_sphinx_docs(name, targets = {}, needs_json_labels = [], needextends_labels = []):
     """
     Generate sphinx_docs targets for a project.
 
@@ -17,12 +18,14 @@ def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
         name: rule invocation name - unused
         targets: dictionary with keys as target suffixes and values as lists of file targets
                 Example: {'all': ["//path:docs_all"], 'trace': ["//path:docs_trace"]}
-        needs_json_labels: list of labels for needs.json files to generate needimports directory
+        needs_json_labels: list of labels for needs.json files to generate needimports directives
+        needextends_labels: list of labels for needextends.rst files to generate needextend directives
     """
 
     # Generate needimports directory for needs.json files
+
     if needs_json_labels:
-        generate_sphinx_project(
+        generate_needimports_structure(
             name = "generate_needimports",
             title = "Need imports",
             needs_json_labels = needs_json_labels,
@@ -31,6 +34,21 @@ def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
         # Create empty filegroup when no needs_json_labels are provided
         native.filegroup(
             name = "generate_needimports",
+            srcs = [],
+            visibility = ["//visibility:public"],
+        )
+
+    # Generate needimports directory for needs.json files
+    if needextends_labels:
+        generate_needextends_structure(
+            name = "generate_needextends",
+            title = "# CodeLinks",
+            needextends_labels = needextends_labels,
+        )
+    else:
+        # Create empty filegroup when no needs_json_labels are provided
+        native.filegroup(
+            name = "generate_needextends",
             srcs = [],
             visibility = ["//visibility:public"],
         )
@@ -62,7 +80,7 @@ def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
 
     # Generate targets for each key in the targets dictionary
     for target_key, file_targets in targets.items():
-        target_srcs = base_srcs + file_targets + [":generate_needimports"]
+        target_srcs = base_srcs + file_targets + [":generate_needimports", ":generate_needextends"]
 
         # HTML targets
         sphinx_docs(
@@ -86,38 +104,4 @@ def generate_sphinx_docs(name, targets = {}, needs_json_labels = []):
             srcs = target_srcs + needs_json_labels,
             formats = ["needs"],
             **default_fields
-        )
-
-def generate_needimports_project(name, title, needs_json_labels = []):
-    """Generate a needimports directory with index.rst containing needimport directives."""
-
-    if needs_json_labels:
-        native.genrule(
-            name = name,
-            srcs = needs_json_labels,
-            outs = ["needimports/index.rst"],
-            cmd = """
-            mkdir -p $(RULEDIR)/needimports
-            cat > $(RULEDIR)/needimports/index.rst << 'EOF'
-{title}
-{underline}
-
-{needimports}
-EOF
-            """.format(
-                title = title,
-                underline = "=" * len(title),
-                needimports = "\\n".join([
-                    ".. needimport:: ../{}.json".format(label.replace(":", "/").replace("//", ""))
-                    for label in needs_json_labels
-                ]),
-            ),
-            visibility = ["//visibility:public"],
-        )
-    else:
-        # Create empty filegroup when no needs_json_labels are provided
-        native.filegroup(
-            name = name,
-            srcs = [],
-            visibility = ["//visibility:public"],
         )

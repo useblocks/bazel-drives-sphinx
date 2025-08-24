@@ -49,6 +49,10 @@ generate_sphinx_project = rule(
             doc = "List of labels that produce needs.json files",
             default = [],
         ),
+        "needs_json_labels": attr.label_list(
+            doc = "List of labels that produce needs.json files",
+            default = [],
+        ),
         "strip_prefix": attr.string(
             doc = "Prefix to strip from document paths when generating toctree entries and copying files",
             default = "",

@@ -13,7 +13,6 @@ filegroup(
         "index.rst",
         "trace/authentication.rst",
         "trace/authorization.rst",
-        "codelinks/docs/needextend.txt",
     ],
     visibility = ["//visibility:public"],
 )

@@ -921,7 +921,7 @@ sphinx-basic-ng==1.0.0b2 \
     # via furo
 # WARNING: pip install will require the following package to be hashed.
 # Consider using a hashable URL like https://github.com/jazzband/pip-tools/archive/SOMECOMMIT.zip
-sphinx-codelinks @ git+https://github.com/useblocks/sphinx-codelinks.git@2e167cd70662ef54646490df967fc08e84fd39de
+sphinx-codelinks @ git+https://github.com/useblocks/sphinx-codelinks.git@2dc167363d7e7e4d130c1c6747a597c5259b865d
     # via -r tools/sphinx/requirements.in
 sphinx-data-viewer==0.1.5 \
     --hash=sha256:a7d5e58613562bb745380bfe61ca8b69997998167fd6fa9aea55606c9a4b17e4 \

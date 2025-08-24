@@ -11,3 +11,6 @@ bazel-bazel-drives-sphinx
 
 # Sphinx build directories
 _build/
+
+# bazel vendor offline repository
+vendor_src/

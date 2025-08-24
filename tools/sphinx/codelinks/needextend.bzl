@@ -2,17 +2,17 @@
 
 def _codelinks_needextend_impl(ctx):
     # Create output directory
-    output_dir = ctx.actions.declare_directory("codelinks_needextend")
+    output_dir = ctx.actions.declare_file("needextends.rst")
 
     args = ctx.actions.args()
 
-    # Add JSON marker file
+    # JSON marker file
     args.add(ctx.files.json_markers[0].path + "/marked_content.json")
 
-    # Second argument: output directory
+    # output directory
     args.add(output_dir.path)
 
-    # Third argument: remote URL field name
+    # remote URL field name
     args.add(ctx.attr.remote_url_field)
 
     inputs = [ctx.file.json_markers]

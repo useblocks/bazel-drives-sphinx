@@ -12,7 +12,7 @@ schema_severity = 'warning'
 regex = "^(?P<prefix>[^/]+//[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/)(?P<remains>.*)?"
 link_url = "{url}"
 link_name = "{{remains}}"
-options = ["remote_url"]
+options = ["src_trace"]
 
 [[needs.extra_options]]
 name = "efforts"
@@ -27,6 +27,8 @@ schema.type = "string"
 schema.enum = ["QM", "A", "B", "C", "D"]
 
 [[needs.extra_options]]
-name = "remote_url"
+name = "src_trace"
 description = "CodeLinks marker for remote URL"
 schema.type = "string"
+
+
