@@ -27,7 +27,7 @@ def generate_needimports_structure(
 ):
     """
     Generate a needimports directory with separate files for each needimport and an index.rst with toctree.
-    
+
     :param output_dir: Output directory for the generated needimport RST parts
     :param needs_json_paths: List of Bazel paths to dirs containing needs.json files
     :param needs_json_short_paths: List of Bazel short_paths to dirs containing needs.json files
@@ -63,6 +63,7 @@ def generate_needimports_structure(
             invalid_chars = ' <>:"/\\|?*'
             for char in invalid_chars:
                 project_file_name = project_file_name.replace(char, "_")
+
             # Ensure the filename isn't empty
             assert project_file_name, (
                 f"Could not determine a valid filename from {needs_json_short_path}"
@@ -80,9 +81,7 @@ def generate_needimports_structure(
 
             # Find common path
             try:
-                common_path = Path(
-                    os.path.commonpath([needs_json_abs, output_dir_abs])
-                )
+                common_path = Path(os.path.commonpath([needs_json_abs, output_dir_abs]))
             except ValueError:
                 # No common path (e.g., different drives on Windows), use absolute path
                 common_path = Path("/")
@@ -105,20 +104,6 @@ def generate_needimports_structure(
                 relative_path = f"{back_path}/{forward_path}/needs.json"
             else:
                 relative_path = f"{back_path}/needs.json"
-
-            # raise ValueError(
-            #     f"\n  {cwd=}"
-            #     f"\n  {needs_json_path=}"
-            #     f"\n  {needs_json_short_path=}"
-            #     f"\n  {output_dir=}"
-            #     f"\n  {output_dir_abs=}"
-            #     # f"\n  {needs_file_path_abs=}"
-            #     # f"\n  {relative_dir=}"
-            #     f"\n  {relative_path=}"
-            #     f"\n  {path_parts=}"
-            #     f"\n  {needs_file_path=}"
-            #     f"\n  {project_file_name=}"
-            # )
 
             # Project title for the needs file
             project_title = f"Project {'/'.join(path_parts)}"

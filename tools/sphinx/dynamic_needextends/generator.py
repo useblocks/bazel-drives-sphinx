@@ -42,7 +42,6 @@ def generate_needextends_structure(
 
         # Project title for the section
         project_title = f"**{project_path}**"
-        # underline = "-" * len(project_title)
 
         # Read the needextends file content
         needextends_content = ""
