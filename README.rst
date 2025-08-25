@@ -229,6 +229,121 @@ The project is organized to demonstrate modular documentation management with Ba
 - **Modular Dependencies**: Each component has separate ``docs_all`` and ``docs_trace`` filegroups, allowing
   selective inclusion of full documentation or trace-only artifacts
 - **Schema Validation**: Project-specific `schemas.json`_ files define validation rules for Sphinx-Needs
+- **CodeLinks Integration**: Automated source code analysis and traceability link generation using
+  `sphinx-codelinks <https://codelinks.useblocks.com/>`__
+  with need ID reference markers in source code and automatic needextend directive generation
+
+**CodeLinks Source Code Traceability:**
+
+The system integrates `sphinx-codelinks <https://github.com/useblocks/sphinx-codelinks>`__ for automated source code analysis and traceability:
+
+1. **Source Code Analysis**: Each component can analyze source files for need ID references using ``codelinks_analyse`` targets
+2. **Need ID Markers**: Source code files contain special markers like ``@need-ids: REQ_001, REQ_002`` to reference documentation needs
+3. **Automatic Needextend Generation**: The ``codelinks_needextend`` rule automatically generates ``.. needextend::`` directives 
+   from analyzed source code markers
+4. **Cross-Project Integration**: Generated needextend directives are collected and included in projects via the 
+   ``needextends_labels`` attribute in ``generate_sphinx_docs()``
+
+**CodeLinks Configuration:**
+
+Each component that participates in source code traceability requires two configuration files:
+
+1. **Component CodeLinks Config** (``codelinks.toml``):
+
+   .. code-block:: toml
+
+      [codelinks.projects.code.analyse]
+      get_need_id_refs = true
+      get_oneline_needs = false
+      get_rst = false
+
+      [codelinks.projects.code.source_discover]
+      src_dir = "./src"
+      gitignore = true
+
+      [codelinks.projects.code.analyse.need_id_refs]
+      markers = ["@need-ids:"]
+
+   The project name ``code`` can be adjusted per component. If there is just one project,
+   the name does not matter.
+   sphinx-codelinks will pick up all configured projects in case it is not constrained using ``--project`` on the CLI.
+
+2. **Project Sphinx-Needs Config** (``ubproject.toml``):
+
+   .. code-block:: toml
+
+      [needs.string_links.codelinks]
+      regex = "^(?P<prefix>[^/]+//[^/]+/[^/]+/[^/]+/[^/]+/[^/]+/)(?P<remains>.*)?"
+      link_url = "{{ prefix }}{{ remains }}"
+      link_name = "{{ remains }}"
+      options = ["src_trace"]
+
+      [[needs.extra_options]]
+      name = "src_trace"
+      description = "CodeLinks marker for remote URL"
+      schema.type = "string"
+
+   This ensures short source code references on requirements with a full reference to the remote Github source file
+   and line.
+
+**CodeLinks Bazel Integration:**
+
+Components integrate CodeLinks through Bazel rules in their ``BUILD.bazel`` files:
+
+.. code-block:: starlark
+
+   load("//tools/sphinx/codelinks:analyse.bzl", "codelinks_analyse")
+   load("//tools/sphinx/codelinks:needextend.bzl", "codelinks_needextend")
+
+   filegroup(
+       name = "sources",
+       srcs = ["src/component.c"],
+   )
+
+   codelinks_analyse(
+       name = "codelinks_analyse",
+       config = ":codelinks.toml",
+       srcs = [":sources", "//:git_infos"],
+       visibility = ["//visibility:public"],
+   )
+
+   codelinks_needextend(
+       name = "codelinks_needextend", 
+       json_markers = ":codelinks_analyse",
+       visibility = ["//visibility:public"],
+   )
+
+The ``//:git_infos`` target provides Git repository metadata to CodeLinks for generating accurate source code links.
+It contains information about the current Git repository state (commit hash, remote URL, etc.) that enables
+CodeLinks to generate proper URLs pointing to the exact source code location in the remote repository.
+
+**Git Repository Information:**
+
+The ``//:git_infos`` target is defined in the root ``BUILD.bazel`` file and extracts Git metadata needed for
+generating accurate source code URLs in the CodeLinks integration. This target provides:
+
+- Current Git commit hash
+- Remote repository URL (e.g., GitHub repository)
+- Branch information
+- Repository state metadata
+
+This information allows CodeLinks to generate URLs that point to the exact line and commit of source code
+in the remote repository, ensuring that traceability links remain accurate even as the codebase evolves.
+
+**Usage of codelinks_needextend in projects**
+
+Projects reference these needextend targets in their documentation configuration:
+
+.. code-block:: starlark
+
+   generate_sphinx_docs(
+       name = "project_docs",
+       targets = targets,
+       needextends_labels = [
+           "//projects/webapp/auth:codelinks_needextend",
+           "//projects/webapp/api:codelinks_needextend",
+       ],
+   )
 
 **Needs.json Integration:**
 
@@ -252,12 +367,31 @@ Example integration project configuration::
             "//projects/webapp:docs_needs_all",
             "//projects/acdc:docs_needs_all", 
         ],
+        needextends_labels = [
+            "//projects/integration/overall:codelinks_needextend",
+        ],
     )
 
 This enables integration projects like `projects/integration/BUILD.bazel`_ to import and display needs from multiple source projects,
 creating comprehensive traceability matrices and cross-project validation without manual needimport directive management.
 
 This structure enables selective documentation builds where Bazel determines which components to include, while Sphinx handles the actual documentation generation with full markup, validation and cross-referencing capabilities across multiple projects.
+
+**Source Code Traceability Workflow:**
+
+1. **Source Code Markers**: Developers add need ID reference markers in source code:
+
+   .. code-block:: c
+
+      // @need-ids: REQ_AUTH_001, REQ_AUTH_002
+      int authenticate_user(const char* username, const char* password) {
+          // Implementation
+      }
+
+2. **Analysis**: Bazel runs CodeLinks analysis on source files to extract need references as JSON
+3. **Needextend Generation**: Automatic generation of ``.. needextend::`` directives linking source code to documentation needs
+4. **Integration**: Generated needextend directives are included in project documentation via ``needextends_labels``
+5. **Validation**: Sphinx-Needs validates that all referenced need IDs exist and creates traceability links
 
 Building Documentation
 ----------------------

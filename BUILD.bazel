@@ -1,1 +1,12 @@
-
+# required for codelinks Git analysis
+# TODO: migrate to bazel-out/stable-status.txt / workspace_status_command
+filegroup(
+    name = "git_infos",
+    srcs = glob([
+        ".git/refs/heads/*",
+    ]) + [
+        ".git/HEAD",
+        ".git/config",
+    ],
+    visibility = ["//visibility:public"],
+)

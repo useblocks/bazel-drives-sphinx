@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -19,63 +20,109 @@ NEEDS_FILE_TEMPLATE = """{{ project_title }}
 
 
 def generate_needimports_structure(
-    output_dir, needs_json_files=None, title="Need imports"
+    output_dir: Path,
+    needs_json_paths: list[Path],
+    needs_json_short_paths: list[Path],
+    title="Need imports",
 ):
-    """Generate a needimports directory with separate files for each needimport and an index.rst with toctree."""
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
+    """
+    Generate a needimports directory with separate files for each needimport and an index.rst with toctree.
+
+    :param output_dir: Output directory for the generated needimport RST parts
+    :param needs_json_paths: List of Bazel paths to dirs containing needs.json files
+    :param needs_json_short_paths: List of Bazel short_paths to dirs containing needs.json files
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate separate files for each needimport
     toctree_entries = []
     created_files = []
 
-    if needs_json_files:
-        for needs_json_file in needs_json_files:
+    assert len(needs_json_paths) == len(needs_json_short_paths), (
+        "needs_json_paths and needs_json_short_paths must have the same length"
+    )
+
+    cwd = Path(os.getcwd())
+    if needs_json_paths:
+        for idx, needs_json_file in enumerate(needs_json_paths):
             # Extract the relative path for the needimport directive
             needs_json_path = Path(needs_json_file)
+            needs_json_short_path = Path(needs_json_short_paths[idx])
 
-            # Find the needs.json file in the path and construct relative path
-            # Example: projects/webapp/docs_needs/_build/needs/needs.json -> ../webapp/docs_needs/_build/needs/needs.json
-            path_parts = needs_json_path.parts
+            # Construct a file name for the target needs.json
+            # Remove commonly existing trailing parts that are not useful for the filename.
+            # e.g. projects/webapp/docs_needs/_build/needs -> projects/webapp/docs_needs
+            path_parts = needs_json_short_path.parts
+            to_rm_from_end_items = ["needs", "_build"]
+            for to_rm in to_rm_from_end_items:
+                if path_parts and path_parts[-1] == to_rm:
+                    path_parts = path_parts[:-1]
+            project_file_name = "_".join(path_parts)
+
+            # Remove characters that should not exist in filenames
+            invalid_chars = ' <>:"/\\|?*'
+            for char in invalid_chars:
+                project_file_name = project_file_name.replace(char, "_")
+
+            # Ensure the filename isn't empty
+            assert project_file_name, (
+                f"Could not determine a valid filename from {needs_json_short_path}"
+            )
 
             # Look for the pattern that indicates this is a needs build output
-            if "_build" in path_parts and "needs" in path_parts:
-                # Find the project name (e.g., 'webapp', 'acdc')
-                project_name = None
-                for i, part in enumerate(path_parts):
-                    if part == "projects" and i + 1 < len(path_parts):
-                        project_name = path_parts[i + 1]
-                        break
+            # Create filename for this project's needs
+            needs_filename = f"{project_file_name}.rst"
+            needs_rst_output_path = output_dir / needs_filename
 
-                if project_name:
-                    # Create filename for this project's needs
-                    needs_filename = f"{project_name}_needs.rst"
-                    needs_file_path = output_path / needs_filename
+            # Relative path to the needs.json file using short_path
+            # Find common root path between needs_json_path and output_dir
+            needs_json_abs = cwd / needs_json_path
+            output_dir_abs = cwd / output_dir
 
-                    # Relative path to the needs.json file
-                    relative_dir = f"../../../../{needs_json_path}"
-                    relative_path = f"{relative_dir}/needs.json"
+            # Find common path
+            try:
+                common_path = Path(os.path.commonpath([needs_json_abs, output_dir_abs]))
+            except ValueError:
+                # No common path (e.g., different drives on Windows), use absolute path
+                common_path = Path("/")
 
-                    # Project title for the needs file
-                    project_title = f"Project {project_name}"
-                    underline = "=" * len(project_title)
+            # Calculate steps back from output_dir to common_path
+            output_rel_to_common = output_dir_abs.relative_to(common_path)
+            steps_back = len(output_rel_to_common.parts)
+            back_path = "/".join([".."] * steps_back) if steps_back > 0 else "."
 
-                    # Generate the needs file content
-                    needs_content = NEEDS_FILE_TEMPLATE.replace(
-                        "{{ project_title }}", project_title
-                    )
-                    needs_content = needs_content.replace("{{ underline }}", underline)
-                    needs_content = needs_content.replace(
-                        "{{ relative_path }}", relative_path
-                    )
+            # Calculate path from common_path to needs.json
+            needs_rel_to_common = needs_json_abs.relative_to(common_path)
+            forward_path = str(needs_rel_to_common) if needs_rel_to_common.parts else ""
 
-                    # Write the needs file
-                    with open(needs_file_path, "w") as f:
-                        f.write(needs_content)
+            # Combine back path and forward path
+            if back_path == "." and not forward_path:
+                relative_path = "needs.json"
+            elif back_path == "." and forward_path:
+                relative_path = f"{forward_path}/needs.json"
+            elif forward_path:
+                relative_path = f"{back_path}/{forward_path}/needs.json"
+            else:
+                relative_path = f"{back_path}/needs.json"
 
-                    # Add to toctree (without .rst extension)
-                    toctree_entries.append(f"   {project_name}_needs")
-                    created_files.append(needs_filename)
+            # Project title for the needs file
+            project_title = f"Project {'/'.join(path_parts)}"
+            underline = "=" * len(project_title)
+
+            # Generate the needs file content
+            needs_content = NEEDS_FILE_TEMPLATE.replace(
+                "{{ project_title }}", project_title
+            )
+            needs_content = needs_content.replace("{{ underline }}", underline)
+            needs_content = needs_content.replace("{{ relative_path }}", relative_path)
+
+            # Write the needs file
+            with open(needs_rst_output_path, "w") as f:
+                f.write(needs_content)
+
+            # Add to toctree (without .rst extension)
+            toctree_entries.append(f"   {project_file_name}")
+            created_files.append(needs_filename)
 
     # Generate index.rst with toctree
     toctree_content = (
@@ -91,11 +138,11 @@ def generate_needimports_structure(
     )
 
     # Write index.rst
-    index_path = output_path / "index.rst"
+    index_path = output_dir / "index.rst"
     with open(index_path, "w") as f:
         f.write(index_content)
 
-    print(f"Generated needimports project in {output_path}")
+    print(f"Generated needimports project in {output_dir}")
     print(f"Project title: '{title}'")
     print(f"Created files: {created_files}")
     print(f"Toctree entries: {toctree_entries}")
@@ -116,20 +163,28 @@ if __name__ == "__main__":
         help="Title of the project to use in the documentation",
     )
     parser.add_argument(
-        "--needs-json",
+        "--needs-json-path",
         action="append",
         default=[],
-        help="needs.json files (can be specified multiple times)",
+        help="needs.json files path (can be specified multiple times)",
+    )
+    parser.add_argument(
+        "--needs-json-short-path",
+        action="append",
+        default=[],
+        help="needs.json files short_path (can be specified multiple times)",
     )
 
     args = parser.parse_args()
 
     print(f"Output directory: {args.output_dir}")
     print(f"Project title: '{args.title}'")
-    print(f"Needs JSON: {args.needs_json}")
+    print(f"Needs JSON paths: {args.needs_json_path}")
+    print(f"Needs JSON short paths: {args.needs_json_short_path}")
 
     generate_needimports_structure(
-        args.output_dir,
-        args.needs_json,
+        Path(args.output_dir),
+        [Path(x) for x in args.needs_json_path],
+        [Path(x) for x in args.needs_json_short_path],
         args.title,
     )

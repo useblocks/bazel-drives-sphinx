@@ -1,0 +1,22 @@
+load("//tools/sphinx/codelinks:analyse.bzl", "codelinks_analyse")
+load("//tools/sphinx/codelinks:needextend.bzl", "codelinks_needextend")
+
+filegroup(
+    name = "sources",
+    srcs = [
+        "src/ac.c",
+    ],
+)
+
+codelinks_analyse(
+    name = "codelinks_analyse",
+    config = ":codelinks.toml",
+    srcs = [":sources", '//:git_infos'],
+    visibility = ["//visibility:public"],
+)
+
+codelinks_needextend(
+    name = "codelinks_needextend",
+    json_markers = ":codelinks_analyse",
+    visibility = ["//visibility:public"],
+)

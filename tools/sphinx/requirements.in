@@ -5,3 +5,4 @@
 sphinx-needs[plotting] @ git+https://github.com/useblocks/sphinx-needs.git@9d86602d510f8526dd5f0e6b8581ee9db1fa9bb3
 Sphinx
 furo
+sphinx-codelinks @ git+https://github.com/useblocks/sphinx-codelinks.git@2dc167363d7e7e4d130c1c6747a597c5259b865d

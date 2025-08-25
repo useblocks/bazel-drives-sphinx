@@ -14,4 +14,7 @@ targets = {
 generate_sphinx_docs(
     name = "acdc_docs",
     targets = targets,
+    needextends_labels = [
+        "//projects/acdc/ac:codelinks_needextend",
+    ],
 )
