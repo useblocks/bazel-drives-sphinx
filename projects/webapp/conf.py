@@ -1,7 +1,5 @@
 """Configuration file for the Sphinx documentation builder."""
 
-import time
-
 project = "Bazel Drives Sphinx: Web-App Project"
 author = "ubmarco"
 release = "0.1"
@@ -26,15 +24,3 @@ needs_schema_definitions_from_json = "schemas.json"
 suppress_warnings = [
     "needs.beta",
 ]
-
-
-def setup(app):
-
-    def wait_on_build_finished(app, exception):
-        """
-        Wait after the build is finished to debug the Bazel sandbox.
-        """
-        print(f"{app.srcdir=} - {app.outdir=}")
-        time.sleep(120)
-
-    # app.connect("build-finished", wait_on_build_finished, priority=1000)
