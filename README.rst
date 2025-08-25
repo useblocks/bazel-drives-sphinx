@@ -110,7 +110,7 @@ The project is organized to demonstrate modular documentation management with Ba
 
   bazel-drives-sphinx/
   ├── MODULE.bazel                    # Bazel module configuration
-  ├── BUILD.bazel                     # Root build file
+  ├── BUILD.bazel                     # Root build file (includes git_infos target)
   ├── README.rst                      # This file
   ├── cfg_bazel/                      # Bazel config
   │   ├── BUILD.bazel                 # Make it a package
@@ -121,8 +121,12 @@ The project is organized to demonstrate modular documentation management with Ba
   │   │   ├── conf.py                 # Sphinx configuration
   │   │   ├── index.rst               # Project root with */docs/index glob pattern
   │   │   ├── schemas.json            # Project-specific schema definitions
-  │   │   ├── ubproject.toml          # Sphinx-Needs project configuration
+  │   │   ├── ubproject.toml          # Sphinx-Needs project configuration (+CodeLinks config)
   │   │   ├── ac/                     # AC component
+  │   │   │   ├── BUILD.bazel         # Component build with CodeLinks rules
+  │   │   │   ├── codelinks.toml      # CodeLinks component configuration
+  │   │   │   ├── src/                # Source code with need ID markers
+  │   │   │   │   └── ac.c            # C source file with @need-ids: markers
   │   │   │   └── docs/               # AC documentation
   │   │   │       ├── BUILD.bazel     # Component docs filegroups
   │   │   │       ├── index.rst       # Component entry point
@@ -180,6 +184,9 @@ The project is organized to demonstrate modular documentation management with Ba
           │   ├── BUILD.bazel         # Generator targets
           │   ├── generate.bzl        # Bazel rule for needimport generation
           │   └── generator.py        # Python script for needimport assembly
+          ├── codelinks/              # CodeLinks integration rules
+          │   ├── analyse.bzl         # Bazel rule for codelinks_analyse
+          │   └── needextend.bzl      # Bazel rule for codelinks_needextend
           └── dynamic_project/        # Dynamic Sphinx project generation (currently unused)
               ├── BUILD.bazel         # Generator targets
               ├── generate.bzl        # Custom Bazel rule for project generation
