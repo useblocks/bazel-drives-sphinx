@@ -6,7 +6,7 @@ from pathlib import Path
 # Internal template content
 INDEX_TEMPLATE = """{{ title }}
 
-Included needextends files from the following code parts:
+Generated the following needextend directives from source files:
 
 {{ project_sections }}
 """

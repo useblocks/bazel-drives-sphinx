@@ -8,9 +8,10 @@ def _generate_needimports_structure_impl(ctx):
     args.add("--title", ctx.attr.title)
     args.add("--output-dir", output_dir.path)
 
-    # Add needs.json files
+    # Add needs.json files with both path and short_path
     for needs_json in ctx.files.needs_json_labels:
-        args.add("--needs-json", needs_json.short_path)
+        args.add("--needs-json-path", needs_json.path)
+        args.add("--needs-json-short-path", needs_json.short_path)
 
     # Only needs_json_labels are inputs now
     inputs = ctx.files.needs_json_labels
